@@ -230,6 +230,7 @@ if ($VmResource.Tags.ContainsKey('CostControl') -and $VmResource.Tags.ContainsKe
     }
 
 }
+}
 
 <#
 

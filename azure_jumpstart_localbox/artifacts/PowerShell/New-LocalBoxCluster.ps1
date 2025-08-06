@@ -168,11 +168,13 @@ Update-AzDeploymentProgressTag -ProgressString 'Building Domain Controller VM...
 
 New-DCVM -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
 
+Update-AzDeploymentProgressTag -ProgressString 'Finished Prepping Machines' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+
+
 # Provision Admincenter VM
 # Write-Host "[Build cluster - Step 9/12] Building Windows Admin Center gateway server VM... (skipping step)" -ForegroundColor Green
 #New-AdminCenterVM -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
 
-<#
 
 Write-Host "[Build cluster - Step 9/11] Preparing Azure local cluster cloud deployment..." -ForegroundColor Green
 
@@ -229,6 +231,8 @@ if ($VmResource.Tags.ContainsKey('CostControl') -and $VmResource.Tags.ContainsKe
 
 }
 
+<#
+
 Write-Host "[Build cluster - Step 11/11] Run cluster deployment..." -ForegroundColor Green
 
 if ($ClusterValidationDeployment.ProvisioningState -eq "Succeeded") {
@@ -272,16 +276,15 @@ else {
     Write-Host '$autoDeployClusterResource is false, skipping Local cluster deployment. If desired, follow the documentation to deploy the cluster manually'
 }
 
-
+#>
 
 $endtime = Get-Date
 $timeSpan = New-TimeSpan -Start $starttime -End $endtime
 Write-Host
-Write-Host "Successfully deployed LocalBox infrastructure." -ForegroundColor Green
-Write-Host "Infrastructure deployment time was $($timeSpan.Hours):$($timeSpan.Minutes) (hh:mm)." -ForegroundColor Green
+Write-Host "Successfully prepped LocalBox infrastructure." -ForegroundColor Green
+Write-Host "Infrastructure prep time was $($timeSpan.Hours):$($timeSpan.Minutes) (hh:mm)." -ForegroundColor Green
 
 Stop-Transcript
 
 #endregion
 
-#>

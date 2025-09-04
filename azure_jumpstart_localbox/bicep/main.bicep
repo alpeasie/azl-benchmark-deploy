@@ -16,6 +16,9 @@ param windowsAdminPassword string
 @description('Name for your log analytics workspace')
 param logAnalyticsWorkspaceName string = 'LocalBox-Workspace'
 
+@description('Azure Local cluster name (used inside LocalBox configuration).')
+param clusterName string = 'localboxcluster'
+
 @description('Public DNS to use for the domain')
 param natDNS string = '8.8.8.8'
 
@@ -34,10 +37,15 @@ param location string = resourceGroup().location
 @description('Override default RDP port using this parameter. Default is 3389. No changes will be made to the client VM.')
 param rdpPort string = '3389'
 
-@description('Choice to enable automatic deployment of Azure Local cluster resource after the client VM deployment is complete. Default is false.')
-param autoDeployClusterResource bool = true
+@description('Cluster deployment mode: none = skip cluster deployment, validate = run validation only, full = validate then deploy cluster (and optional upgrade).')
+@allowed([
+  'none'
+  'validate'
+  'full'
+])
+param clusterDeploymentMode string = 'validate'
 
-@description('Choice to enable automatic upgrade of Azure Local cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
+@description('Choice to enable automatic upgrade of Azure Local cluster resource after the client VM deployment is complete. Only applicable when clusterDeploymentMode = full. Default is false.')
 param autoUpgradeClusterResource bool = false
 
 @description('Enable automatic logon into LocalBox Virtual Machine')
@@ -130,12 +138,13 @@ module hostDeployment 'host/host.bicep' = {
     natDNS: natDNS
     location: location
     rdpPort: rdpPort
-    autoDeployClusterResource: autoDeployClusterResource
+    clusterDeploymentMode: clusterDeploymentMode
     autoUpgradeClusterResource: autoUpgradeClusterResource
     vmAutologon: vmAutologon
     resourceTags: resourceTags
     enableAzureSpotPricing: enableAzureSpotPricing
     azureLocalInstanceLocation: azureLocalInstanceLocation
+    clusterName: clusterName
   }
 }
 

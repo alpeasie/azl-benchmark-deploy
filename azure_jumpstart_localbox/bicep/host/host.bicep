@@ -74,10 +74,15 @@ param natDNS string = '8.8.8.8'
 @description('Override default RDP port using this parameter. Default is 3389. No changes will be made to the client VM.')
 param rdpPort string = '3389'
 
-@description('Choice to enable automatic deployment of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Default is false.')
-param autoDeployClusterResource bool = false
+@description('Cluster deployment mode: none = skip, validate = validation only, full = validation + deployment')
+@allowed([
+  'none'
+  'validate'
+  'full'
+])
+param clusterDeploymentMode string = 'validate'
 
-@description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
+@description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when clusterDeploymentMode = full. Default is false.')
 param autoUpgradeClusterResource bool = false
 
 @description('Enable automatic logon into LocalBox Virtual Machine')
@@ -85,6 +90,9 @@ param vmAutologon bool = false
 
 @description('Option to enable spot pricing for the LocalBox Client VM')
 param enableAzureSpotPricing bool = false
+
+@description('Azure Local cluster name passed from parent deployment (used to override placeholder in LocalBox config).')
+param clusterName string = 'localboxcluster'
 
 var encodedPassword = base64(windowsAdminPassword)
 var bastionName = 'LocalBox-Bastion'
@@ -280,11 +288,13 @@ resource vmBootstrap 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' =
     type: 'CustomScriptExtension'
     typeHandlerVersion: '1.10'
     autoUpgradeMinorVersion: true
-    protectedSettings: {
+    settings: {
       fileUris: [
         uri(templateBaseUrl, 'artifacts/PowerShell/Bootstrap.ps1')
       ]
-      commandToExecute: 'powershell.exe -ExecutionPolicy Bypass -File Bootstrap.ps1 -adminUsername ${windowsAdminUsername} -adminPassword ${encodedPassword} -tenantId ${tenantId} -subscriptionId ${subscription().subscriptionId} -spnProviderId ${spnProviderId} -resourceGroup ${resourceGroup().name} -azureLocation ${azureLocalInstanceLocation} -stagingStorageAccountName ${stagingStorageAccountName} -workspaceName ${workspaceName} -templateBaseUrl ${templateBaseUrl} -registerCluster ${registerCluster} -deployAKSArc ${deployAKSArc} -deployResourceBridge ${deployResourceBridge} -natDNS ${natDNS} -rdpPort ${rdpPort} -autoDeployClusterResource ${autoDeployClusterResource} -autoUpgradeClusterResource ${autoUpgradeClusterResource} -vmAutologon ${vmAutologon}'
+    }
+    protectedSettings: {
+      commandToExecute: 'powershell.exe -ExecutionPolicy Bypass -File Bootstrap.ps1 -adminUsername ${windowsAdminUsername} -adminPassword ${encodedPassword} -tenantId ${tenantId} -subscriptionId ${subscription().subscriptionId} -spnProviderId ${spnProviderId} -resourceGroup ${resourceGroup().name} -azureLocation ${azureLocalInstanceLocation} -stagingStorageAccountName ${stagingStorageAccountName} -workspaceName ${workspaceName} -templateBaseUrl ${templateBaseUrl} -registerCluster ${registerCluster} -deployAKSArc ${deployAKSArc} -deployResourceBridge ${deployResourceBridge} -natDNS ${natDNS} -rdpPort ${rdpPort} -clusterDeploymentMode ${clusterDeploymentMode} -autoUpgradeClusterResource ${autoUpgradeClusterResource} -vmAutologon ${vmAutologon} -clusterName ${clusterName}'
     }
   }
 }

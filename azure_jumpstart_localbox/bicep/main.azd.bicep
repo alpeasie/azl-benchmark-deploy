@@ -3,12 +3,6 @@
 @description('Prefix for resource group, i.e. {name}-rg')
 param envName string
 
-@description('Azure service principal client id')
-param spnClientId string = 'null'
-
-@description('Azure service principal client secret')
-@secure()
-param spnClientSecret string = 'null'
 
 @description('Azure AD tenant id for your service principal')
 param tenantId string = 'null'
@@ -27,6 +21,9 @@ param windowsAdminPassword string
 
 @description('Name for your log analytics workspace')
 param logAnalyticsWorkspaceName string = 'LocalBox-Workspace'
+
+@description('Azure Local cluster name (used inside LocalBox configuration).')
+param clusterName string = 'localboxcluster'
 
 @description('Public DNS to use for the domain')
 param natDNS string = '8.8.8.8'
@@ -47,13 +44,20 @@ param location string
 @description('Override default RDP port using this parameter. Default is 3389.')
 param rdpPort string = '3389'
 
-@description('Choice to enable automatic deployment of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Default is false.')
-param autoDeployClusterResource bool = false
+@description('Cluster deployment mode: none = skip, validate = validation only, full = validation + deployment')
+@allowed(['none','validate','full'])
+param clusterDeploymentMode string = 'validate'
 
-@description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when autoDeployClusterResource is true. Default is false.')
+@description('Choice to enable automatic upgrade of Azure Arc enabled HCI cluster resource after the client VM deployment is complete. Only applicable when clusterDeploymentMode = full. Default is false.')
 param autoUpgradeClusterResource bool = false
 
 var templateBaseUrl = 'https://raw.githubusercontent.com/${githubAccount}/azure_arc/${githubBranch}/azure_jumpstart_localbox/'
+
+// Basic tags & resourceTags (align with main.bicep simplifying governance logic here)
+param tags object = {
+  Project: 'jumpstart_LocalBox'
+}
+var resourceTags = tags
 
 targetScope = 'subscription'
 
@@ -68,6 +72,7 @@ module mgmtArtifactsAndPolicyDeployment 'mgmt/mgmtArtifacts.bicep' = {
   params: {
     workspaceName: logAnalyticsWorkspaceName
     location: location
+  resourceTags: resourceTags
   }
 }
 
@@ -77,6 +82,7 @@ module networkDeployment 'network/network.bicep' = {
   params: {
     deployBastion: deployBastion
     location: location
+  resourceTags: resourceTags
   }
 }
 
@@ -85,6 +91,7 @@ module storageAccountDeployment 'mgmt/storageAccount.bicep' = {
   scope: rg
   params: {
     location: location
+  resourceTags: resourceTags
   }
 }
 
@@ -94,9 +101,7 @@ module hostDeployment 'host/host.bicep' = {
   params: {
     windowsAdminUsername: windowsAdminUsername
     windowsAdminPassword: windowsAdminPassword
-    spnClientId: spnClientId
-    spnClientSecret: spnClientSecret
-    tenantId: tenantId
+  tenantId: tenantId
     spnProviderId: spnProviderId
     workspaceName: logAnalyticsWorkspaceName
     stagingStorageAccountName: storageAccountDeployment.outputs.storageAccountName
@@ -106,8 +111,10 @@ module hostDeployment 'host/host.bicep' = {
     natDNS: natDNS
     location: location
     rdpPort: rdpPort
-    autoDeployClusterResource: autoDeployClusterResource
+  clusterDeploymentMode: clusterDeploymentMode
     autoUpgradeClusterResource: autoUpgradeClusterResource
+  resourceTags: resourceTags
+  clusterName: clusterName
   }
 }
 

@@ -190,94 +190,78 @@ Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -
 # Validate and deploy the cluster
 #######################################################################################
 
-Write-Host "[Build cluster - Step 10/11] Validate cluster deployment..." -ForegroundColor Green
+Write-Host "[Build cluster - Step 10/11] Cluster deployment phase (mode: $env:clusterDeploymentMode)..." -ForegroundColor Green
 
-if ("True" -eq $env:autoDeployClusterResource) {
-
-Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
-
-$TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.json"
-$TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath "azlocal.parameters.json"
-
-try {
-    New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
-}
-catch {
-    Write-Output "Validation failed. Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
-}
-
-
-
-$VmResource = Get-AzResource -ResourceName $env:computername -ResourceGroupName $env:resourceGroup -ResourceType 'microsoft.compute/virtualmachines'
-
-if ($VmResource.Tags.ContainsKey('CostControl') -and $VmResource.Tags.ContainsKey('SecurityControl')) {
-
-    if($VmResource.Tags.CostControl -eq 'Ignore' -and $VmResource.Tags.SecurityControl -eq 'Ignore') {
-
-        Write-Output "CostControl and SecurityControl tags are set to 'Ignore' for the VM resource, adding them to other resources created by the Azure Local deployment"
-
-        $tags = @{
-            'CostControl' = 'Ignore'
-            'SecurityControl' = 'Ignore'
+switch ($env:clusterDeploymentMode) {
+    'none' {
+        Write-Host "Cluster deployment mode 'none' - skipping validation and deployment." -ForegroundColor Yellow
+    }
+    'validate' {
+        Write-Host "Cluster deployment mode 'validate' - running validation only." -ForegroundColor Green
+        Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+        $TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath 'azlocal.json'
+        $TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath 'azlocal.parameters.json'
+        try {
+            New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
+        } catch {
+            Write-Output "Validation failed (mode validate). Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
         }
-
-        Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.KeyVault/vaults' | Update-AzTag -Tag $tags -Operation Merge
-
-        Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Storage/storageAccounts' | Update-AzTag -Tag $tags -Operation Merge
-
-        Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Compute/disks' | Update-AzTag -Tag $tags -Operation Merge
-
+        # Tag propagation (same as old logic)
+        $VmResource = Get-AzResource -ResourceName $env:computername -ResourceGroupName $env:resourceGroup -ResourceType 'microsoft.compute/virtualmachines'
+        if ($VmResource.Tags.ContainsKey('CostControl') -and $VmResource.Tags.ContainsKey('SecurityControl')) {
+            if ($VmResource.Tags.CostControl -eq 'Ignore' -and $VmResource.Tags.SecurityControl -eq 'Ignore') {
+                $tags = @{ 'CostControl' = 'Ignore'; 'SecurityControl' = 'Ignore' }
+                Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.KeyVault/vaults' | Update-AzTag -Tag $tags -Operation Merge
+                Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Storage/storageAccounts' | Update-AzTag -Tag $tags -Operation Merge
+                Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Compute/disks' | Update-AzTag -Tag $tags -Operation Merge
+            }
+        }
     }
-
-}
-}
-
-<#
-
-Write-Host "[Build cluster - Step 11/11] Run cluster deployment..." -ForegroundColor Green
-
-if ($ClusterValidationDeployment.ProvisioningState -eq "Succeeded") {
-
-
-    Update-AzDeploymentProgressTag -ProgressString 'Deploying Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
-
-    Write-Host "Validation succeeded. Deploying Local cluster..."
-
-    try {
-        New-AzResourceGroupDeployment -Name 'localcluster-deploy' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -deploymentMode "Deploy" -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterDeployment -ErrorAction Stop
+    'full' {
+        Write-Host "Cluster deployment mode 'full' - running validation and full deployment." -ForegroundColor Green
+        Update-AzDeploymentProgressTag -ProgressString 'Validating Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+        $TemplateFile = Join-Path -Path $env:LocalBoxDir -ChildPath 'azlocal.json'
+        $TemplateParameterFile = Join-Path -Path $env:LocalBoxDir -ChildPath 'azlocal.parameters.json'
+        $validationSucceeded = $false
+        try {
+            New-AzResourceGroupDeployment -Name 'localcluster-validate' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterValidationDeployment -ErrorAction Stop
+            $validationSucceeded = ($ClusterValidationDeployment.ProvisioningState -eq 'Succeeded')
+        } catch {
+            Write-Output "Validation failed (mode full). Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
+        }
+        if ($validationSucceeded) {
+            Update-AzDeploymentProgressTag -ProgressString 'Deploying Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+            Write-Host 'Validation succeeded. Deploying Local cluster...'
+            try {
+                New-AzResourceGroupDeployment -Name 'localcluster-deploy' -ResourceGroupName $env:resourceGroup -TemplateFile $TemplateFile -deploymentMode 'Deploy' -TemplateParameterFile $TemplateParameterFile -OutVariable ClusterDeployment -ErrorAction Stop
+            } catch {
+                Write-Output "Deployment command failed. Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
+            }
+            if ('True' -eq $env:autoUpgradeClusterResource -and $ClusterDeployment.ProvisioningState -eq 'Succeeded') {
+                Write-Host 'Deployment succeeded. Upgrading Local cluster...'
+                Update-AzDeploymentProgressTag -ProgressString 'Upgrading Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
+                Update-AzLocalCluster -LocalBoxConfig $LocalBoxConfig -domainCred $domainCred
+            } else {
+                Write-Host '$autoUpgradeClusterResource is false or deployment failed, skipping upgrade.'
+            }
+            # Tag propagation after deployment
+            $VmResource = Get-AzResource -ResourceName $env:computername -ResourceGroupName $env:resourceGroup -ResourceType 'microsoft.compute/virtualmachines'
+            if ($VmResource.Tags.ContainsKey('CostControl') -and $VmResource.Tags.ContainsKey('SecurityControl')) {
+                if ($VmResource.Tags.CostControl -eq 'Ignore' -and $VmResource.Tags.SecurityControl -eq 'Ignore') {
+                    $tags = @{ 'CostControl' = 'Ignore'; 'SecurityControl' = 'Ignore' }
+                    Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.KeyVault/vaults' | Update-AzTag -Tag $tags -Operation Merge
+                    Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Storage/storageAccounts' | Update-AzTag -Tag $tags -Operation Merge
+                    Get-AzResource -ResourceGroupName $env:resourceGroup -ResourceType 'Microsoft.Compute/disks' | Update-AzTag -Tag $tags -Operation Merge
+                }
+            }
+        } else {
+            Write-Error 'Validation failed. Aborting full deployment.'
+        }
     }
-    catch {
-        Write-Output "Deployment command failed. Re-run New-AzResourceGroupDeployment to retry. Error: $($_.Exception.Message)"
+    default {
+        Write-Host "Unknown clusterDeploymentMode '$($env:clusterDeploymentMode)'. Skipping cluster deployment." -ForegroundColor Yellow
     }
-
-    if ("True" -eq $env:autoUpgradeClusterResource -and $ClusterDeployment.ProvisioningState -eq "Succeeded") {
-
-        Write-Host "Deployment succeeded. Upgrading Local cluster..."
-
-        Update-AzDeploymentProgressTag -ProgressString 'Upgrading Azure Local cluster' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
-
-        Update-AzLocalCluster -LocalBoxConfig $LocalBoxConfig -domainCred $domainCred
-
-    }
-    else {
-
-        Write-Host '$autoUpgradeClusterResource is false, skipping Local cluster upgrade...follow the documentation to upgrade the cluster manually'
-
-    }
-
 }
-else {
-
-    Write-Error "Validation failed. Aborting deployment. Re-run New-AzResourceGroupDeployment to retry."
-
-}
-
-}
-else {
-    Write-Host '$autoDeployClusterResource is false, skipping Local cluster deployment. If desired, follow the documentation to deploy the cluster manually'
-}
-
-#>
 
 $endtime = Get-Date
 $timeSpan = New-TimeSpan -Start $starttime -End $endtime

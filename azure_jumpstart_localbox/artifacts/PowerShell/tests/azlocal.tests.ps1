@@ -12,7 +12,7 @@ BeforeDiscovery {
 
 }
 
-if ("True" -eq $env:autoDeployClusterResource) {
+if ($env:clusterDeploymentMode -eq 'full') {
     Describe "<cluster>" -ForEach $clusters {
         BeforeAll {
             $cluster = $_

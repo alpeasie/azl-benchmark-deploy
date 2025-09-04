@@ -20,8 +20,8 @@
         "deployBastion": {
             "value": false
         },
-        "autoDeployClusterResource": {
-            "value": false
+        "clusterDeploymentMode": {
+            "value": "validate"
         },
         "autoUpgradeClusterResource": {
             "value": false

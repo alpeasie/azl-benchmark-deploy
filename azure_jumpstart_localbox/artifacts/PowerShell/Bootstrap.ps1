@@ -14,10 +14,11 @@ param (
   [string]$deployResourceBridge,
   [string]$natDNS,
   [string]$rdpPort,
-  [string]$autoDeployClusterResource,
+  [string]$clusterDeploymentMode,
   [string]$autoUpgradeClusterResource,
   [string]$debugEnabled,
-  [string]$vmAutologon
+  [string]$vmAutologon,
+  [string]$clusterName
 )
 
 Write-Output "Input parameters:"
@@ -34,13 +35,17 @@ $PSBoundParameters
 [System.Environment]::SetEnvironmentVariable('templateBaseUrl', $templateBaseUrl, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('deployAKSArc', $deployAKSArc, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('deployResourceBridge', $deployResourceBridge, [System.EnvironmentVariableTarget]::Machine)
-[System.Environment]::SetEnvironmentVariable('autoDeployClusterResource', $autoDeployClusterResource, [System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('clusterDeploymentMode', $clusterDeploymentMode, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('autoUpgradeClusterResource', $autoUpgradeClusterResource, [System.EnvironmentVariableTarget]::Machine)
+# Backward compatibility for scripts/tests still checking autoDeployClusterResource (True when mode != none)
+$legacyAutoDeploy = ($clusterDeploymentMode -ne 'none')
+[System.Environment]::SetEnvironmentVariable('autoDeployClusterResource', ($legacyAutoDeploy.ToString()), [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('registerCluster', $registerCluster, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('natDNS', $natDNS, [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('LocalBoxDir', "C:\LocalBox", [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('LocalBoxLogsDir', "C:\LocalBox\Logs", [System.EnvironmentVariableTarget]::Machine)
 [System.Environment]::SetEnvironmentVariable('LocalBoxTestsDir', "C:\LocalBox\Tests", [System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('clusterName', $clusterName, [System.EnvironmentVariableTarget]::Machine)
 
 if ($debugEnabled -eq "true") {
   [System.Environment]::SetEnvironmentVariable('ErrorActionPreference', "Break", [System.EnvironmentVariableTarget]::Machine)
@@ -81,7 +86,13 @@ $ConfigurationDataFile = "$LocalBoxPath\LocalBox-Config.psd1"
 [System.Environment]::SetEnvironmentVariable('LocalBoxConfigFile', $ConfigurationDataFile, [System.EnvironmentVariableTarget]::Machine)
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBox-Config.psd1") -OutFile $ConfigurationDataFile
 
-# Importing configuration data
+# If clusterName not supplied, fall back to default
+if ([string]::IsNullOrWhiteSpace($clusterName)) { $clusterName = 'localboxcluster' }
+
+# Replace cluster name placeholder BEFORE importing config
+(Get-Content -Path $ConfigurationDataFile) -replace '%staging-clustername%', $clusterName | Set-Content -Path $ConfigurationDataFile
+
+# Importing configuration data (after placeholder replacement)
 $LocalBoxConfig = Import-PowerShellDataFile -Path $ConfigurationDataFile
 
 # Create paths

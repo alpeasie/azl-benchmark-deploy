@@ -29,8 +29,8 @@
         "deployBastion": {
             "value": "${JS_DEPLOY_BASTION}"
         },
-        "autoDeployClusterResource": {
-            "value": "${JS_AUTO_DEPLOY_CLUSTER_RESOURCE}"
+        "clusterDeploymentMode": {
+            "value": "${JS_CLUSTER_DEPLOYMENT_MODE}"
         },
         "autoUpgradeClusterResource": {
             "value": "${JS_AUTO_UPGRADE_CLUSTER_RESOURCE}"

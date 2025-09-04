@@ -71,7 +71,8 @@
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
     ClusterVSwitchName                   = "hciSwitch"
-    ClusterName                          = "localboxcluster"
+    # Cluster name placeholder (replaced during Bootstrap by -clusterName parameter)
+    ClusterName                          = "%staging-clustername%"
     WACVMName                            = "AdminCenter"
     ClusterSharedVolumePath              = "C:\ClusterStorage\S2D_vDISK1"
     LCMDeployUsername                    = "LocalBoxDeployUser"

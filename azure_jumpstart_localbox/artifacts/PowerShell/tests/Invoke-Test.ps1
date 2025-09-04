@@ -88,7 +88,7 @@ function Wait-AzLocalClusterConnectivity {
     }
 }
 
-if ('True' -eq $env:autoDeployClusterResource) {
+if ($env:clusterDeploymentMode -eq 'full') {
 
     # Wait for the deployment to complete
     Wait-AzDeployment -ResourceGroupName $env:resourceGroup -DeploymentName localcluster-deploy -ClusterName $LocalBoxConfig.ClusterName

@@ -4,7 +4,7 @@ BeforeDiscovery {
 
 }
 
-if ("True" -eq $env:autoDeployClusterResource) {
+if ($env:clusterDeploymentMode -eq 'full') {
 Describe "LocalBox resource group" {
     BeforeAll {
         $ResourceGroupName = $env:resourceGroup
@@ -13,7 +13,7 @@ Describe "LocalBox resource group" {
         (Get-AzResource -ResourceGroupName $ResourceGroupName).count | Should -BeGreaterOrEqual 25
     }
 }
-} else {
+} elseif ($env:clusterDeploymentMode -eq 'validate') {
 Describe "LocalBox resource group" {
     BeforeAll {
         $ResourceGroupName = $env:resourceGroup
@@ -21,5 +21,12 @@ Describe "LocalBox resource group" {
     It "should have 18 resources or more" {
         (Get-AzResource -ResourceGroupName $ResourceGroupName).count | Should -BeGreaterOrEqual 18
     }
+} else {
+Describe "LocalBox resource group" {
+    BeforeAll { $ResourceGroupName = $env:resourceGroup }
+    It "should have 5 resources or more" {
+        (Get-AzResource -ResourceGroupName $ResourceGroupName).count | Should -BeGreaterOrEqual 5
+    }
+}
 }
 }

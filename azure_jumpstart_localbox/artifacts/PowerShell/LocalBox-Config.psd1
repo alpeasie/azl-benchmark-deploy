@@ -42,19 +42,19 @@
 
     MgmtHostConfig = @{
         Hostname = "AzLMGMT"
-        IP       = "192.168.1.11/24"
+        IP       = "192.168.1.10/24"
     }
 
     NodeHostConfig = @(
         @{
             Hostname    = "AzLHOST1"
-            IP          = "192.168.1.12/24"
+            IP          = "192.168.1.11/24"
             StorageAIP  = "10.71.1.10"
             StorageBIP  = "10.71.2.10"
         },
         @{
             Hostname    = "AzLHOST2"
-            IP          = "192.168.1.13/24"
+            IP          = "192.168.1.12/24"
             StorageAIP  = "10.71.1.11"
             StorageBIP  = "10.71.2.11"
         }
@@ -178,8 +178,8 @@
     # rbDHCPExclusionEnd                   = "192.168.200.209"
     dcVLAN200IP                          = "192.168.200.205"
     rbSubnetMask                         = "255.255.255.0"
-    clusterIpRangeStart                  = "192.168.1.100"
-    clusterIpRangeEnd                    = "192.168.1.199"
+    clusterIpRangeStart                  = "192.168.1.13"
+    clusterIpRangeEnd                    = "192.168.1.19"
     vmGateway                            = "192.168.200.1"
     vmIpPrefix                           = "192.168.200.0/24"
     vmDNS                                = "192.168.1.254"

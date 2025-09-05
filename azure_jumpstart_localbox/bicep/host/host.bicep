@@ -299,6 +299,28 @@ resource vmBootstrap 'Microsoft.Compute/virtualMachines/extensions@2022-03-01' =
   }
 }
 
+// Auto-shutdown schedule for the VM at 7:00 PM Pacific Time daily
+resource vmAutoShutdown 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: 'shutdown-computevm-${vmName}'
+  location: location
+  properties: {
+    status: 'Enabled'
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      // 24h format HHmm -> 1900 = 7:00 PM
+      time: '1900'
+    }
+    timeZoneId: 'Pacific Standard Time' // Adjusts for DST automatically (PST/PDT)
+    targetResourceId: vm.id
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+      emailRecipient: ''
+      notificationLocale: 'en'
+    }
+  }
+}
+
 // Add role assignment for the VM: Owner role
 resource vmRoleAssignment_Owner 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(vm.id, 'Microsoft.Authorization/roleAssignments', 'Owner')
@@ -331,6 +353,3 @@ resource deployerRoleAssignment_StorageAccountContributor 'Microsoft.Authorizati
     principalType: 'ServicePrincipal'
   }
 }
-
-output adminUsername string = windowsAdminUsername
-output publicIP string = deployBastion == false ? concat(publicIpAddress.properties.ipAddress) : ''

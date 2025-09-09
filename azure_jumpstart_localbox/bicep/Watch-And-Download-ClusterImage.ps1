@@ -5,6 +5,11 @@ Core Gen2 marketplace gallery image to the cluster via the Azure CLI 'stack-hci'
 
 Safe to re-run: it will skip image creation if already present.
 
+Step 1:
+  az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3 
+
+
+
 Examples:
   pwsh ./Watch-And-Download-ClusterImage.ps1                     # Full flow
   pwsh ./Watch-And-Download-ClusterImage.ps1 -DiscoverMarketplace # Just list existing images & storage paths
@@ -56,27 +61,12 @@ function Write-Info([string]$m){ Write-Host "[INFO] $m" -ForegroundColor DarkGra
 function Write-Warn([string]$m){ Write-Warning $m }
 function Write-Err([string]$m){ Write-Host "[ERROR] $m" -ForegroundColor Red }
 
-if (-not $SkipLogin) {
-  Write-Stage "Azure login"
-  az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3 | Out-Null
-}
 
-Write-Stage "Ensuring stack-hci CLI extension"
-$ext = az extension list --query "[?name=='stack-hci'].version" -o tsv 2>$null
-if (-not $ext) {
-  az extension add --name stack-hci | Out-Null
-  Write-Info "Installed stack-hci extension"
-} else {
-  az extension update --name stack-hci | Out-Null
-  Write-Info "Updated stack-hci extension (was $ext)"
-}
+#az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3
+#az config set extension.use_dynamic_install=yes_without_prompt | Out-Null
 
-function Invoke-AzJson {
-  param([string[]]$AzArgs)
-  $raw = az @AzArgs 2>$null
-  if (-not $raw) { return $null }
-  try { return $raw | ConvertFrom-Json } catch { return $raw }
-}
+
+
 
 Write-Stage "Polling cluster provisioning state"
 $deadline = (Get-Date).AddHours($MaxWaitHours)
@@ -98,112 +88,45 @@ if ($provisioningState -ne 'Succeeded') {
 }
 
 Write-Stage "Cluster succeeded; gathering storage paths"
-$storagePaths = $null
-try {
-  $storagePathsJson = az resource show -g $ResourceGroup -n $ClusterName --resource-type Microsoft.AzureStackHCI/clusters --query properties.storageProfile.storagePaths -o json 2>$null
-  if ($storagePathsJson -and $storagePathsJson -notin @('null','')) { $storagePaths = $storagePathsJson | ConvertFrom-Json }
-} catch { Write-Warn "Unable to read storage paths: $($_.Exception.Message)" }
 
-if (-not $storagePaths) { Write-Warn "No storage paths discovered. Provide -StoragePathName if required by your environment." }
 
-$chosenPath = $null
-if ($StoragePathName) {
-  $chosenPath = $storagePaths | Where-Object { $_.name -ieq $StoragePathName }
-  if (-not $chosenPath) { Write-Warn "Specified -StoragePathName '$StoragePathName' not found; proceeding without explicit path." }
-} else {
-  if ($storagePaths) {
-    $preferred = $storagePaths | Where-Object { $_.name -ieq 'storagepath2' } | Select-Object -First 1
-    $chosenPath = if ($preferred) { $preferred } else { $storagePaths | Select-Object -First 1 }
-  }
-}
-if ($chosenPath) { Write-Info "Selected storage path: $($chosenPath.name)" } else { Write-Info "No explicit storage path selected." }
+#$imageName = "ws2025-dc-azure-edition"
+#$publisher = "MicrosoftWindowsServer"
+#$offer = "WindowsServer"
+#$sku = "2025-datacenter-azure-edition"
+#$version = "latest"
+#$customLocationName = "jumpstart"
+#$urn = '{0}:{1}:{2}:{3}' -f $publisher, $offer, $sku, $version
 
-Write-Stage "Existing gallery images"
-$existingImages = Invoke-AzJson -AzArgs @('stack-hci','marketplace','gallery-image','list','--resource-group',$ResourceGroup,'--cluster-name',$ClusterName)
-if ($existingImages) {
-  foreach ($img in $existingImages) {
-    Write-Info ("Found image: {0} ({1}/{2}/{3}) State={4}" -f $img.name,$img.properties.publisher,$img.properties.offer,$img.properties.sku,$img.properties.provisioningState)
-  }
-} else {
-  Write-Info "No existing gallery images returned."
+
+# Accept Marketplace terms (one-time per subscription for this plan)
+#az vm image terms accept --publisher $publisher --offer $offer --plan $sku --only-show-errors 1>$null
+
+
+# Variables for the marketplace image to download
+$customLocationId = "/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg3/providers/Microsoft.ExtendedLocation/customLocations/jumpstart"
+
+# Get storage path ID
+$storagePathId = az stack-hci-vm storagepath list --resource-group $ResourceGroup --query "[?starts_with(name, 'UserStorage2-')].id | [0]" -o tsv
+
+if ([string]::IsNullOrWhiteSpace($storagePathId)) {
+  throw "No storage path with a name starting 'UserStorage2-' found in RG"
 }
 
-if ($DiscoverMarketplace) {
-  Write-Stage "Discovery mode only - no creation" 'Yellow'
-  $summary = [pscustomobject]@{
-    mode              = 'discovery'
-    resourceGroup     = $ResourceGroup
-    clusterName       = $ClusterName
-    provisioningState = $provisioningState
-    storagePaths      = $storagePaths
-    existingImages    = $existingImages
-    elapsedMinutes    = [math]::Round(((Get-Date)-$startTime).TotalMinutes,2)
-  }
-  $json = $summary | ConvertTo-Json -Depth 6
-  $json
-  if ($OutputJson) { $json | Out-File -Encoding UTF8 $OutputJson; Write-Info "Wrote summary to $OutputJson" }
-  return
-}
+Write-Host "Using Storage Path: $storagePathId"
 
-$imageAlready = $false
-if ($existingImages) {
-  $imageAlready = $existingImages | Where-Object {
-    $_.name -ieq $TargetImageName -or (
-      $_.properties.publisher -ieq $Publisher -and
-      $_.properties.offer -ieq $Offer -and
-      $_.properties.sku -ieq $Sku
-    )
-  } | Select-Object -First 1
-}
+# Create the Azure Local image on your cluster from Marketplace
 
-if ($imageAlready) {
-  Write-Stage "Image already present - skipping create" 'Yellow'
-} else {
-  Write-Stage "Creating gallery image"
-  $createArgs = @(
-    'stack-hci','marketplace','gallery-image','create',
-    '--resource-group',$ResourceGroup,
-    '--cluster-name',$ClusterName,
-    '--name',$TargetImageName,
-    '--publisher',$Publisher,
-    '--offer',$Offer,
-    '--sku',$Sku,
-    '--version',$Version,
-    '--os-type','Windows'
-  )
-  if ($chosenPath -and $chosenPath.id) {
-    $createArgs += @('--storage-path-id',$chosenPath.id)
-  } elseif ($chosenPath -and $chosenPath.name) {
-    $createArgs += @('--storage-path-name',$chosenPath.name)
-  }
-  Write-Info "Invoking: az $($createArgs -join ' ')"
-  $createResultRaw = az @createArgs 2>&1
-  Write-Info $createResultRaw
-  Start-Sleep -Seconds 20
-}
+$urn = "MicrosoftWindowsServer:WindowsServer:2025-datacenter-azure-edition:latest"
 
-Write-Stage "Final image list"
-$finalImages = Invoke-AzJson -AzArgs @('stack-hci','marketplace','gallery-image','list','--resource-group',$ResourceGroup,'--cluster-name',$ClusterName)
-$targetFinal = $finalImages | Where-Object { $_.name -ieq $TargetImageName } | Select-Object -First 1
-if ($targetFinal) { Write-Info "Target image provisioningState: $($targetFinal.properties.provisioningState)" }
-else { Write-Warn "Target image not visible yet (may still be provisioning asynchronously)." }
+az stack-hci-vm image create `
+  --resource-group $ResourceGroup `
+  --custom-location $customLocationId `
+  --name $imageName `
+  --os-type Windows `
+  --urn $urn `
+  --storage-path-id $storagePathId 
 
-$summary = [pscustomobject]@{
-  resourceGroup     = $ResourceGroup
-  clusterName       = $ClusterName
-  clusterState      = $provisioningState
-  targetImageName   = $TargetImageName
-  publisher         = $Publisher
-  offer             = $Offer
-  sku               = $Sku
-  version           = $Version
-  storagePathChosen = $chosenPath
-  images            = $finalImages
-  elapsedMinutes    = [math]::Round(((Get-Date)-$startTime).TotalMinutes,2)
-}
-
-$summaryJson = $summary | ConvertTo-Json -Depth 8
-$summaryJson
-if ($OutputJson) { $summaryJson | Out-File -Encoding UTF8 $OutputJson; Write-Info "Wrote summary JSON to $OutputJson" }
+Write-Host "Creating VM Image" 
 
 Write-Host "Done." -ForegroundColor Green

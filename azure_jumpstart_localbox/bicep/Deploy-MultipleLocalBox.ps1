@@ -1,34 +1,49 @@
 <#
-Purpose: Sequentially deploy the LocalBox Bicep template three times with different
+Purpose: Deploy one or more LocalBox scenarios (1,2,3, or all) with different
          resource group names, cluster names, and deployment modes, then optionally delete them.
 
-Scenarios:
+Scenarios mapping:
+
+cd azure_jumpstart_localbox/bicep
+resourceGroupName="azlrg2"
+location="eastus" 
+az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3 
+az group create --name resourceGroupName --location location
+az deployment group create -g resourceGroupName -f "main.bicep" -p "main.bicepparam"
+
+
+
  1. azlrg1 / azlcluster1 / none
  2. azlrg2 / azlcluster2 / validate
  3. azlrg3 / azlcluster3 / full
 
-Overrides are passed inline so the shared parameter file can remain unchanged.
+Selection:
+  -Scenario 1     # only scenario 1
+  -Scenario 2
+  -Scenario 3
+  -Scenario all   # (default) all three
 
-Usage examples (run from the bicep folder containing main.bicep):
-  pwsh ./Deploy-MultipleLocalBox.ps1
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Cleanup            # Delete RGs after starting deployments
-  pwsh ./Deploy-MultipleLocalBox.ps1 -WhatIfOnly         # Only run what-if for each scenario
-  pwsh ./Deploy-MultipleLocalBox.ps1 -SkipLogin          # Assume you are already logged in
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Cleanup -WaitForDeletion
+Examples:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -Cleanup -RemoveLocks
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario all -WhatIfOnly
 
-Requires: Azure CLI, Bicep CLI integrated with az (az version >= 2.20+ typically), proper permissions.
-
-Note: The user request included a cluster name spelled 'azlclsuter3'; assumed typo -> using 'azlcluster3'. Adjust in $Scenarios if intentional.
+Existing switches still apply to the filtered set.
 #>
+[CmdletBinding()]
 param(
   [string]$TemplateFile = 'main.bicep',
   [string]$ParameterFile = 'main.bicepparam',
-  [string]$Location = 'westus2',
-  [switch]$Cleanup,                 # Delete resource groups after deployment (or what-if)
-  [switch]$WaitForDeletion,         # When used with -Cleanup, waits for each delete to finish
-  [switch]$WhatIfOnly,              # Perform what-if instead of actual deployment
-  [switch]$SkipLogin,               # Skip az login (use current context)
-  [switch]$RemoveLocks              # Attempt to remove resource & RG locks before deletion
+  [string]$Location = 'eastus',
+
+  [ValidateSet('1','2','3','all')]
+  [string]$Scenario = 'all',          # Which scenario(s) to run
+
+  [switch]$Cleanup,                   # Delete resource groups after deployment (or what-if)
+  [switch]$WaitForDeletion,           # With -Cleanup, waits for deletions
+  [switch]$WhatIfOnly,                # Only run what-if
+  [switch]$SkipLogin,                 # Skip az login
+  [switch]$RemoveLocks                # Remove locks before deletion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,46 +64,64 @@ function Remove-ResourceGroupLocks {
       az lock delete --ids $l.id | Out-Null
     }
   } catch {
-    Write-Warning "Failed to enumerate/remove locks for $ResourceGroup: $($_.Exception.Message)"
+    Write-Warning "Failed to enumerate/remove locks for ${ResourceGroup}: $($_.Exception.Message)"
   }
 }
 
+# Resolve paths relative to script directory to avoid CWD issues
+$ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ResolvedTemplate = Resolve-Path -Path (Join-Path $ScriptRoot $TemplateFile)
+$ResolvedParams   = Resolve-Path -Path (Join-Path $ScriptRoot $ParameterFile)
+
 if (-not $SkipLogin) {
-  Write-Stage 'Logging into Azure (device code may appear)'
+  Write-Stage 'Logging into Azure'
   az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3 | Out-Null
 }
 
-# Define deployment scenarios
-$Scenarios = @(
-  @{ Rg = 'azlrg1'; Cluster = 'azlcluster1'; Mode = 'none'     },
-  @{ Rg = 'azlrg2'; Cluster = 'azlcluster2'; Mode = 'validate' },
-  @{ Rg = 'azlrg3'; Cluster = 'azlcluster3'; Mode = 'full'     }
+# Full scenario definitions
+$AllScenarios = @(
+  @{ Id='1'; Rg='azlrg1'; Cluster='azlcluster1'; Mode='none'     },
+  @{ Id='2'; Rg='azlrg2'; Cluster='azlcluster2'; Mode='validate' },
+  @{ Id='3'; Rg='azlrg3'; Cluster='azlcluster3'; Mode='full'     }
 )
 
-Write-Stage "Starting scenarios (WhatIf=$WhatIfOnly, Cleanup=$Cleanup)"
+# Filter based on selection
+$Selected = if ($Scenario -eq 'all') { $AllScenarios } else { $AllScenarios | Where-Object { $_.Id -eq $Scenario } }
+if (-not $Selected -or $Selected.Count -eq 0) {
+  Write-Host "No scenarios selected (parameter: $Scenario)" -ForegroundColor Red
+  exit 1
+}
 
-foreach ($s in $Scenarios) {
-  $rg  = $s.Rg
-  $cluster = $s.Cluster
-  $mode = $s.Mode
-  $deploymentName = "localbox-$mode"
+Write-Stage "Selected scenario(s): $($Selected.Id -join ', ') (WhatIf=$WhatIfOnly Cleanup=$Cleanup)"
 
-  Write-Stage "Scenario: RG=$rg Cluster=$cluster Mode=$mode" 'Yellow'
+foreach ($s in $Selected) {
+  $rg        = $s.Rg
+  $cluster   = $s.Cluster
+  $mode      = $s.Mode
+  $deployName = "localbox-$mode"
 
-  Write-Host "Creating/ensuring resource group $rg in $Location" -ForegroundColor Green
-  az group create --name $rg --location $Location | Out-Null
+  Write-Stage "Scenario $($s.Id): RG=$rg Cluster=$cluster Mode=$mode" 'Yellow'
+
+  Write-Host "Ensuring resource group $rg ($Location)" -ForegroundColor Green
+  az group create --name $rg --location $Location 
 
   if ($WhatIfOnly) {
-    Write-Host "Running what-if for $deploymentName" -ForegroundColor Magenta
-    az deployment group what-if -g $rg -n $deploymentName -f $TemplateFile -p $ParameterFile clusterName=$cluster clusterDeploymentMode=$mode
+    Write-Host "What-if: $deployName" -ForegroundColor Magenta
+    az deployment group what-if `
+      -g $rg -n $deployName `
+      -f $ResolvedTemplate -p $ResolvedParams `
+      clusterName=$cluster clusterDeploymentMode=$mode
   } else {
-    Write-Host "Deploying (incremental) $deploymentName" -ForegroundColor Green
-    az deployment group create -g $rg -n $deploymentName -f $TemplateFile -p $ParameterFile clusterName=$cluster clusterDeploymentMode=$mode
+    Write-Host "Deploying: $deployName" -ForegroundColor Green
+    az deployment group create `
+      -g $rg -n $deployName `
+      -f $ResolvedTemplate -p $ResolvedParams `
+      clusterName=$cluster clusterDeploymentMode=$mode
   }
 
   if ($Cleanup) {
     if ($RemoveLocks) {
-      Write-Host "Checking & removing locks in $rg (if any)" -ForegroundColor DarkCyan
+      Write-Host "Removing locks (if any) in $rg" -ForegroundColor DarkCyan
       Remove-ResourceGroupLocks -ResourceGroup $rg
     }
     Write-Host "Deleting resource group $rg" -ForegroundColor Red
@@ -98,10 +131,10 @@ foreach ($s in $Scenarios) {
   }
 }
 
-Write-Stage 'All scenarios processed'
+Write-Stage 'Processing complete'
 
 if ($Cleanup -and -not $WaitForDeletion) {
-  Write-Host 'Deletes running asynchronously (no-wait). Use: az group list -o table to monitor.' -ForegroundColor DarkGray
+  Write-Host 'Deletes are async. Monitor with: az group list -o table' -ForegroundColor DarkGray
 }
 
 Write-Host 'Done.' -ForegroundColor Cyan

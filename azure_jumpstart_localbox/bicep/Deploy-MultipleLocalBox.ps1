@@ -191,6 +191,18 @@ if (-not $Selected -or $Selected.Count -eq 0) {
   exit 1
 }
 
+# When only one scenario selected allow overrides — apply them EARLY so all subsequent logic uses the overrides
+if ($Selected.Count -eq 1 -and ($ResourceGroupOverride -or $ClusterNameOverride)) {
+  if ($ResourceGroupOverride) { $Selected[0].Rg = $ResourceGroupOverride }
+  if ($ClusterNameOverride)  { $Selected[0].Cluster = $ClusterNameOverride }
+  Write-Host "Applied overrides: RG=$($Selected[0].Rg) Cluster=$($Selected[0].Cluster)" -ForegroundColor DarkCyan
+
+  # propagate immediately for the whole run so any subsequent dot-sourced helpers pick them up
+  $env:LOCALBOX_RG = $Selected[0].Rg
+  $env:LOCALBOX_CLUSTER = $Selected[0].Cluster
+  Write-Host "Runtime env set: LOCALBOX_RG=$($env:LOCALBOX_RG) LOCALBOX_CLUSTER=$($env:LOCALBOX_CLUSTER)" -ForegroundColor DarkCyan
+}
+
 Write-Stage "Selected scenario(s): $($Selected.Id -join ', ') (WhatIf=$WhatIfOnly Cleanup=$Cleanup)"
 
 # Auto-enable post deploy for scenario 3 when it's the only selected scenario and user did not explicitly pass -PostDeploy or -SkipDeploy
@@ -218,13 +230,13 @@ function Invoke-ScenarioDeployment {
     Write-Host "What-if: $deployName" -ForegroundColor Magenta
     az deployment group what-if `
       -g $rg -n $deployName `
-      -f $ResolvedTemplate -p $ResolvedParams `
+      -f $ResolvedTemplate.Path --parameters @$($ResolvedParams.Path) `
       clusterName=$cluster clusterDeploymentMode=$mode
   } else {
     Write-Host "Deploying: $deployName" -ForegroundColor Green
     az deployment group create `
       -g $rg -n $deployName `
-      -f $ResolvedTemplate -p $ResolvedParams `
+      -f $ResolvedTemplate.Path --parameters @$($ResolvedParams.Path) `
       clusterName=$cluster clusterDeploymentMode=$mode
   }
 
@@ -249,40 +261,30 @@ function Test-ClusterReady {
   return $false
 }
 
-# In Deploy-MultipleLocalBox.ps1
-
 function Invoke-PostActions {
   param([string]$ResourceGroup,[string]$ClusterName)
+  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+  $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
+  $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
 
-  # Propagate overrides to sub scripts via env so LocalBox.Vars.ps1 picks them up
-  $prevRg = $env:LOCALBOX_RG
-  $prevCl = $env:LOCALBOX_CLUSTER
+  # propagate env again (defensive)
   $env:LOCALBOX_RG = $ResourceGroup
   $env:LOCALBOX_CLUSTER = $ClusterName
-  try {
-    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
-    $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
 
-    Write-Stage "Post: Logical Network (RG=$ResourceGroup Cluster=$ClusterName)" 'Green'
-    & $logicalNetScript
-    Write-Stage "Post: VM Image (RG=$ResourceGroup Cluster=$ClusterName)" 'Green'
-    & $vmImageScript
-  } finally {
-    # Restore previous env values (optional but cleaner)
-    if ($null -ne $prevRg) { $env:LOCALBOX_RG = $prevRg } else { Remove-Item Env:LOCALBOX_RG -ErrorAction SilentlyContinue }
-    if ($null -ne $prevCl) { $env:LOCALBOX_CLUSTER = $prevCl } else { Remove-Item Env:LOCALBOX_CLUSTER -ErrorAction SilentlyContinue }
-  }
-}
+  Write-Stage "Post: Logical Network" 'Green'
+  # Call post scripts with explicit parameters so they don't rely solely on env/defaults
+  & $logicalNetScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
 
-# When only one scenario selected allow overrides
-if ($Selected.Count -eq 1 -and ($ResourceGroupOverride -or $ClusterNameOverride)) {
-  if ($ResourceGroupOverride) { $Selected[0].Rg = $ResourceGroupOverride }
-  if ($ClusterNameOverride)  { $Selected[0].Cluster = $ClusterNameOverride }
-  Write-Host "Applied overrides: RG=$($Selected[0].Rg) Cluster=$($Selected[0].Cluster)" -ForegroundColor DarkCyan
+  Write-Stage "Post: VM Image" 'Green'
+  & $vmImageScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
 }
 
 foreach ($s in $Selected) {
+  # ensure env is set per-iteration so every helper sees the right rg/cluster
+  $env:LOCALBOX_RG = $s.Rg
+  $env:LOCALBOX_CLUSTER = $s.Cluster
+  Write-Host "Using runtime env for scenario $($s.Id): LOCALBOX_RG=$($env:LOCALBOX_RG) LOCALBOX_CLUSTER=$($env:LOCALBOX_CLUSTER)" -ForegroundColor DarkCyan
+
   if (-not $SkipDeploy) {
     Invoke-ScenarioDeployment -ScenarioObject $s
   } else {

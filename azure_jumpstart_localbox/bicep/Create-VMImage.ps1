@@ -2,10 +2,15 @@
 $ErrorActionPreference = "Stop"
 $ProgressPreference = 'SilentlyContinue'
 
-# Dot-source shared vars (ensures login & sets $LocalBoxContext)
-. "$PSScriptRoot\LocalBox.Vars.ps1" -EnsureLogin
+param(
+  [string]$ResourceGroup,
+  [string]$ClusterName
+)
 
-$ctx = $LocalBoxContext
+# Dot-source shared vars (ensures login & sets $LocalBoxContext), prefer explicit params
+. "$PSScriptRoot\LocalBox.Vars.ps1" -ResourceGroup $ResourceGroup -ClusterName $ClusterName -EnsureLogin
+
+$ctx = $Global:LocalBoxContext
 $ResourceGroup     = $ctx.ResourceGroup
 $customLocationId  = $ctx.CustomLocationId
 
@@ -18,12 +23,12 @@ if ([string]::IsNullOrWhiteSpace($storagePathId)) {
 }
 Write-Host "Using Storage Path: $storagePathId"
 
-# Image variables (unchanged except they now inherit RG)
+# Image variables inherit cluster-derived name now
 $publisher       = 'microsoftwindowsserver'
 $offer           = 'windowsserver'
 $sku             = '2025-datacenter-azure-edition-core'
 $version         = '26100.4652.250808'
-$imgResourceName = "$($ctx.ClusterName)img1"  # adjust naming if you want per-cluster convention
+$imgResourceName = "$($ctx.ClusterName)img1"  # per-cluster convention
 
 Write-Host "Creating VM Image in RG $ResourceGroup for cluster $($ctx.ClusterName)"
 az stack-hci-vm image create `

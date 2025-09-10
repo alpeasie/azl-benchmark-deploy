@@ -1,18 +1,25 @@
 #requires -Version 7.0
 $ErrorActionPreference = 'Stop'
 
-. "$PSScriptRoot\LocalBox.Vars.ps1" -EnsureLogin
-$ctx = $LocalBoxContext
+param(
+  [string]$ResourceGroup,
+  [string]$ClusterName
+)
+
+# Dot-source shared vars with explicit values (falls back to env/defaults inside LocalBox.Vars.ps1)
+. "$PSScriptRoot\LocalBox.Vars.ps1" -ResourceGroup $ResourceGroup -ClusterName $ClusterName -EnsureLogin
+$ctx = $Global:LocalBoxContext
 $ResourceGroup = $ctx.ResourceGroup
 $customLocationId = $ctx.CustomLocationId
 
-#$customLocationId = "/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg3/providers/Microsoft.ExtendedLocation/customLocations/jumpstart"
+# remove any commented hard-coded /subscriptions/.../azlrg3 string to avoid confusion
+# (previously: $customLocationId = "/subscriptions/.../resourceGroups/azlrg3/...")
 
 Write-Host "Using RG=$($ctx.ResourceGroup) CustomLocationId=$($ctx.CustomLocationId)"
 
 $location = "East US"
 $switchName = '"ConvergedSwitch(compute_management)"'
-$lnetName = "$($ctx.ClusterName)img1"  
+$lnetName = "$($ctx.ClusterName)-lnet"  
 $addressPrefixes = "192.168.1.0/24"
 $gateway = "192.168.1.1"
 $ipPoolStart = "192.168.1.20"

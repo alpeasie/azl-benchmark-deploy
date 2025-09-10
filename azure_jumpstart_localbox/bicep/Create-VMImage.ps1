@@ -26,30 +26,29 @@ if ($ctx.tenantId -eq $tenant -and $ctx.id -eq $sub) {
 
 
 $ResourceGroup = "azlrg3"
-$location = "East US"
-$switchName = '"ConvergedSwitch(compute_management)"'
-$lnetName = "azlcl3-lnet1"
-$addressPrefixes = "192.168.1.0/24"
-$gateway = "192.168.1.1"
-$ipPoolStart = "192.168.1.20"
-$ipPoolEnd = "192.168.1.253"
-$dnsServers = "192.168.1.254"
-$vlanid = 0
+
+# Get storage path ID
+$storagePathId = az stack-hci-vm storagepath list --resource-group $ResourceGroup --query "[?starts_with(name, 'UserStorage2-')].id | [0]" -o tsv
+
+if ([string]::IsNullOrWhiteSpace($storagePathId)) {
+  throw "No storage path with a name starting 'UserStorage2-' found in RG"
+}
+Write-Host "Using Storage Path: $storagePathId"
+
+
+# Create the Azure Local image on your cluster from Marketplace
+#$urn1 = "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition-core:latest"
+#$urn2 = "MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition-core:26100.4652.250808"
+
 $customLocationId = "/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg3/providers/Microsoft.ExtendedLocation/customLocations/jumpstart"
+$publisher = 'microsoftwindowsserver'
+$offer = 'windowsserver'
+$sku = "2025-datacenter-azure-edition-core"
+$version = "26100.4652.250808" 
+$imgResourceName = "azcl3img1"
 
-az stack-hci-vm network lnet create `
-    --resource-group $ResourceGroup `
-    --custom-location $customLocationId `
-    --location $location `
-    --name $lnetName `
-    --vm-switch-name $switchName `
-    --ip-allocation-method "Static" `
-    --address-prefixes $addressPrefixes `
-    --gateway $gateway `
-    --dns-servers $dnsServers `
-    --vlan $vlanid `
-    --ip-pool-start $ipPoolStart `
-    --ip-pool-end $ipPoolEnd
+Write-Host "Creating VM Image"
 
+az stack-hci-vm image create --resource-group $ResourceGroup --custom-location $customLocationId --name $imgResourceName --os-type "Windows" --offer $offer --publisher $publisher --sku $sku --verbose --version $version
 
-Write-Host "Created Logical Network: $lnetName"
+Write-Host "Done." -ForegroundColor Green

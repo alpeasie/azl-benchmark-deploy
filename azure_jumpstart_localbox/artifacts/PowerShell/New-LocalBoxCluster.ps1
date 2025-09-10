@@ -199,12 +199,14 @@ Update-AzDeploymentProgressTag -ProgressString 'Finished Prepping Machines' -Res
 
 
 Write-Host "[Build cluster - Step 9/11] Preparing Azure local cluster cloud deployment..." -ForegroundColor Green
-
 Update-AzDeploymentProgressTag -ProgressString 'Preparing Azure Local cluster deployment' -ResourceGroupName $env:resourceGroup -ComputerName $env:computername
 
-Invoke-AzureEdgeBootstrap -LocalBoxConfig $LocalBoxConfig -localCred $localCred
-
-Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
+if ($env:clusterDeploymentMode -eq 'none') {
+    Write-Host "Scenario 1 (mode=none): skipping Azure Local bootstrap & prereq registration steps." -ForegroundColor Yellow
+} else {
+    Invoke-AzureEdgeBootstrap -LocalBoxConfig $LocalBoxConfig -localCred $localCred
+    Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
+}
 
 & "$Env:LocalBoxDir\Generate-ARM-Template.ps1"
 

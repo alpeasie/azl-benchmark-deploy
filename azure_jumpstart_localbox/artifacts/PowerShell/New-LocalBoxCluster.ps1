@@ -116,6 +116,28 @@ foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
     Set-AzLocalNodeVhdx -HostName $VM.Hostname -IPAddress $VM.IP -VMMac $mac  -LocalBoxConfig $LocalBoxConfig
 }
 
+# Enable vTPM on all node VMs (minimal change). Add condition if you later want only scenario 1:
+# if ($env:clusterDeploymentMode -eq 'none') { ... }
+try {
+    foreach ($node in $LocalBoxConfig.NodeHostConfig) {
+        $name = $node.Hostname
+        $vmObj = Get-VM -Name $name -ErrorAction Stop
+        if ($vmObj.Generation -ne 2) {
+            Write-Warning "VM $name not Gen2; cannot add vTPM."
+            continue
+        }
+        if (-not (Get-VMTrustedPlatformModule -VMName $name -ErrorAction SilentlyContinue)) {
+            Write-Host "Adding vTPM to $name..." -ForegroundColor Cyan
+            Add-VMTPM -VMName $name
+            Write-Host "vTPM enabled on $name." -ForegroundColor Green
+        } else {
+            Write-Host "vTPM already present on $name (skipping)." -ForegroundColor DarkGray
+        }
+    }
+} catch {
+    Write-Warning "vTPM enable loop encountered an error: $($_.Exception.Message)"
+}
+
 # Start Virtual Machines
 Write-Host "[Build cluster - Step 5/11] Starting VMs..." -ForegroundColor Green
 Write-Host "Starting VM: $($LocalBoxConfig.MgmtHostConfig.Hostname)"

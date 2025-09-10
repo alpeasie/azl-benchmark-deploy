@@ -291,6 +291,9 @@ Set-ItemProperty -Path $oobePath -Name $oobeProperty -Value $oobeValue
 Write-Host "Registry keys and values for Diagnostic Data settings have been set successfully."
 
 # Change RDP Port
+#if (($rdpPort -ne $null) -and ($rdpPort -ne "") # proposed fix if RDP is blocked {
+
+
 Write-Host "Updating RDP Port - RDP port number from configuration is $rdpPort"
 if (($rdpPort -ne $null) -and ($rdpPort -ne "") -and ($rdpPort -ne "3389")) {
   Write-Host "Configuring RDP port number to $rdpPort"
@@ -309,15 +312,15 @@ if (($rdpPort -ne $null) -and ($rdpPort -ne "") -and ($rdpPort -ne "3389")) {
 
   #Setup firewall rules
   if ($rdpPort -eq 3389) {
-    netsh advfirewall firewall set rule group="remote desktop" new Enable=Yes
+    netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
   }
   else {
     $systemroot = get-content env:systemroot
     netsh advfirewall firewall add rule name="Remote Desktop - Custom Port" dir=in program=$systemroot\system32\svchost.exe service=termservice action=allow protocol=TCP localport=$RDPPort enable=yes
   }
-
-  Write-Host "RDP port configuration complete."
 }
+
+Write-Host "RDP port configuration complete."
 
 # Workaround for https://github.com/microsoft/azure_arc/issues/3035
 

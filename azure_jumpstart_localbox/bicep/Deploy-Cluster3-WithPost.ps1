@@ -38,11 +38,13 @@ param(
   [int]$InitialDelayMinutes = 240,
   [int]$MaxWaitMinutes = 480,
   [int]$PollIntervalMinutes = 10,
-  [string]$ResourceGroup = 'azlrg3',
-  [string]$ClusterName = 'azlcluster3',
+  [string]$ResourceGroup = 'azlrg4',      
+  [string]$ClusterName  = 'azlcluster4',  
   [string]$LogPath,
   [switch]$DryRun
 )
+# (Optional) dot-source shared vars early (not required but keeps consistency)
+. "$PSScriptRoot\LocalBox.Vars.ps1" -ResourceGroup $ResourceGroup -ClusterName $ClusterName
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'

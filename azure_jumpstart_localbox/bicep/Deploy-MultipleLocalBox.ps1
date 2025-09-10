@@ -41,6 +41,17 @@ param(
   [ValidateSet('1','2','3','all')]
   [string]$Scenario = 'all',          # Which scenario(s) to run
 
+  # Optional overrides for a single scenario run (ignored when -Scenario all selects multiple)
+  [string]$ResourceGroupOverride,
+  [string]$ClusterNameOverride,
+
+  # Post-deploy orchestration (applies only when exactly one scenario selected)
+  [switch]$PostDeploy,                # Enable post actions (logical network + VM image)
+  [int]$InitialDelayMinutes = 240,      # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
+  [int]$MaxWaitMinutes = 480,         # Polling window
+  [int]$PollIntervalMinutes = 10,     # Poll cadence
+  [switch]$SkipDeploy,                # Run only post steps (assumes deploy already done)
+
   [switch]$Cleanup,                   # Delete resource groups after deployment (or what-if)
   [switch]$WaitForDeletion,           # With -Cleanup, waits for deletions
   [switch]$WhatIfOnly,                # Only run what-if
@@ -113,16 +124,26 @@ if (-not $Selected -or $Selected.Count -eq 0) {
 
 Write-Stage "Selected scenario(s): $($Selected.Id -join ', ') (WhatIf=$WhatIfOnly Cleanup=$Cleanup)"
 
-foreach ($s in $Selected) {
-  $rg        = $s.Rg
-  $cluster   = $s.Cluster
-  $mode      = $s.Mode
+# Auto-enable post deploy for scenario 3 when it's the only selected scenario and user did not explicitly pass -PostDeploy or -SkipDeploy
+if ($Selected.Count -eq 1 -and $Selected[0].Id -eq '3' -and -not $PSBoundParameters.ContainsKey('PostDeploy') -and -not $SkipDeploy) {
+  $PostDeploy = $true
+  Write-Host "Auto-enabled PostDeploy for scenario 3 (override with -PostDeploy:
+  \$false if you want to skip)." -ForegroundColor DarkGray
+}
+
+function Invoke-ScenarioDeployment {
+  param(
+    [Parameter(Mandatory)]$ScenarioObject
+  )
+  $rg        = $ScenarioObject.Rg
+  $cluster   = $ScenarioObject.Cluster
+  $mode      = $ScenarioObject.Mode
   $deployName = "localbox-$mode"
 
-  Write-Stage "Scenario $($s.Id): RG=$rg Cluster=$cluster Mode=$mode" 'Yellow'
+  Write-Stage "Scenario $($ScenarioObject.Id): RG=$rg Cluster=$cluster Mode=$mode" 'Yellow'
 
   Write-Host "Ensuring resource group $rg ($Location)" -ForegroundColor Green
-  az group create --name $rg --location $Location 
+  az group create --name $rg --location $Location | Out-Null
 
   if ($WhatIfOnly) {
     Write-Host "What-if: $deployName" -ForegroundColor Magenta
@@ -147,6 +168,61 @@ foreach ($s in $Selected) {
     $deleteArgs = @('group','delete','--name',$rg,'--yes')
     if (-not $WaitForDeletion) { $deleteArgs += '--no-wait' }
     az @deleteArgs
+  }
+}
+
+function Test-ClusterReady {
+  param([string]$ResourceGroup)
+  try {
+    $sp = az stack-hci-vm storagepath list --resource-group $ResourceGroup --query "[?starts_with(name, 'UserStorage2-')].id | [0]" -o tsv 2>$null
+    if ($sp -and $sp.Trim()) { return $true }
+  } catch {}
+  return $false
+}
+
+function Invoke-PostActions {
+  param([string]$ResourceGroup,[string]$ClusterName)
+  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+  $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
+  $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
+
+  Write-Stage "Post: Logical Network" 'Green'
+  & $logicalNetScript
+  Write-Stage "Post: VM Image" 'Green'
+  & $vmImageScript
+}
+
+# When only one scenario selected allow overrides
+if ($Selected.Count -eq 1 -and ($ResourceGroupOverride -or $ClusterNameOverride)) {
+  if ($ResourceGroupOverride) { $Selected[0].Rg = $ResourceGroupOverride }
+  if ($ClusterNameOverride)  { $Selected[0].Cluster = $ClusterNameOverride }
+  Write-Host "Applied overrides: RG=$($Selected[0].Rg) Cluster=$($Selected[0].Cluster)" -ForegroundColor DarkCyan
+}
+
+foreach ($s in $Selected) {
+  if (-not $SkipDeploy) {
+    Invoke-ScenarioDeployment -ScenarioObject $s
+  } else {
+    Write-Host "SkipDeploy specified; assuming scenario $($s.Id) already deployed." -ForegroundColor Yellow
+  }
+
+  if ($PostDeploy -and $Selected.Count -eq 1 -and $s.Id -eq '3') {
+    $rg = $s.Rg; $cluster = $s.Cluster
+    Write-Stage "Post-deploy orchestration (RG=$rg Cluster=$cluster)" 'Magenta'
+    if ($InitialDelayMinutes -gt 0) {
+      Write-Host "Initial delay $InitialDelayMinutes min before polling" -ForegroundColor Gray
+      Start-Sleep -Seconds ($InitialDelayMinutes * 60)
+    }
+    $deadline = (Get-Date).AddMinutes($MaxWaitMinutes)
+    $poll = 0
+    while (-not (Test-ClusterReady -ResourceGroup $rg)) {
+      if ((Get-Date) -gt $deadline) { throw "Timeout: cluster not ready within $MaxWaitMinutes minutes" }
+      $poll++
+      Write-Host "Poll #$poll not ready; waiting $PollIntervalMinutes min..." -ForegroundColor DarkGray
+      Start-Sleep -Seconds ($PollIntervalMinutes * 60)
+    }
+    Write-Host "Cluster readiness signal detected; running post actions." -ForegroundColor Green
+    Invoke-PostActions -ResourceGroup $rg -ClusterName $cluster
   }
 }
 

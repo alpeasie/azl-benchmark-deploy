@@ -114,6 +114,29 @@ Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
 Invoke-WebRequest https://aka.ms/wacdownload -OutFile "$($LocalBoxConfig.Paths["WACDir"])\WindowsAdminCenter.msi"
+
+# Configurator App install
+$ConfiguratorDir = "C:\LocalBox\ConfiguratorApp"
+New-Item -Path $ConfiguratorDir -ItemType Directory -Force | Out-Null
+Invoke-WebRequest https://aka.ms/ConfiguratorAppForHCI -OutFile "$ConfiguratorDir\ConfiguratorApp.exe"
+
+# Install (simple fire-and-wait). Tries quiet first; falls back to normal launch.
+$installer = "$ConfiguratorDir\ConfiguratorApp.exe"
+if (-not (Test-Path "$ConfiguratorDir\installed.marker")) {
+  $ran = $false
+  foreach ($arg in '/quiet','/qn','/s') {
+    try {
+      Start-Process -FilePath $installer -ArgumentList $arg -Wait -ErrorAction Stop
+      $ran = $true
+      break
+    } catch { }
+  }
+  if (-not $ran) {
+    Start-Process -FilePath $installer -Wait
+  }
+  New-Item -Path "$ConfiguratorDir\installed.marker" -ItemType File -Force | Out-Null
+}
+
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBoxLogonScript.ps1") -OutFile $LocalBoxPath\LocalBoxLogonScript.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/New-LocalBoxCluster.ps1") -OutFile $LocalBoxPath\New-LocalBoxCluster.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/Configure-AKSWorkloadCluster.ps1") -OutFile $LocalBoxPath\Configure-AKSWorkloadCluster.ps1

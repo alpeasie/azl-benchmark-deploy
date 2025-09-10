@@ -130,119 +130,17 @@ resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@20
   properties: {
     securityRules: [
       {
-        name: 'bastion_allow_https_inbound'
+        name: 'allow_rdp_3389'
         properties: {
-          priority: 1010
+          priority: 100
           protocol: 'Tcp'
           access: 'Allow'
           direction: 'Inbound'
-          sourceAddressPrefix: 'Internet'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '443'
-        }
-      }
-      {
-        name: 'bastion_allow_gateway_manager_inbound'
-        properties: {
-          priority: 1011
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: 'GatewayManager'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '443'
-        }
-      }
-      {
-        name: 'bastion_allow_load_balancer_inbound'
-        properties: {
-          priority: 1012
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: 'AzureLoadBalancer'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '443'
-        }
-      }
-      {
-        name: 'bastion_allow_host_comms'
-        properties: {
-          priority: 1013
-          protocol: '*'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: 'VirtualNetwork'
-          sourcePortRange: '*'
-          destinationAddressPrefix: 'VirtualNetwork'
-          destinationPortRanges: [
-            '8080'
-            '5701'
-          ]
-        }
-      }
-      {
-        name: 'bastion_allow_ssh_rdp_outbound'
-        properties: {
-          priority: 1014
-          protocol: '*'
-          access: 'Allow'
-          direction: 'Outbound'
           sourceAddressPrefix: '*'
           sourcePortRange: '*'
-          destinationAddressPrefix: 'VirtualNetwork'
-          destinationPortRanges: [
-            '22'
-            '3389'
-          ]
-        }
-      }
-      {
-        name: 'bastion_allow_azure_cloud_outbound'
-        properties: {
-          priority: 1015
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Outbound'
-          sourceAddressPrefix: '*'
-          sourcePortRange: '*'
-          destinationAddressPrefix: 'AzureCloud'
-          destinationPortRange: '443'
-        }
-      }
-      {
-        name: 'bastion_allow_bastion_comms'
-        properties: {
-          priority: 1016
-          protocol: '*'
-          access: 'Allow'
-          direction: 'Outbound'
-          sourceAddressPrefix: 'VirtualNetwork'
-          sourcePortRange: '*'
-          destinationAddressPrefix: 'VirtualNetwork'
-          destinationPortRanges: [
-            '8080'
-            '5701'
-          ]
-        }
-      }
-      {
-        name: 'bastion_allow_get_session_info'
-        properties: {
-          priority: 1017
-          protocol: '*'
-          access: 'Allow'
-          direction: 'Outbound'
-          sourceAddressPrefix: '*'
-          sourcePortRange: '*'
-          destinationAddressPrefix: 'Internet'
-          destinationPortRanges: [
-            '80'
-            '443'
-          ]
+          destinationAddressPrefix: '*'
+          destinationPortRange: '3389'
+          description: 'Allow RDP'
         }
       }
     ]

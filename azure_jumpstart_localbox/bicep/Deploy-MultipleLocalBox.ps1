@@ -90,7 +90,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   # Scenario 3 (auto post actions):
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3
   # Scenario 3 custom names + post:
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride "azlrg4" -ClusterNameOverride "azlcluster4"
   # Scenario 3 custom names, skip post:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -PostDeploy:$false
   # Post-only after deploy in progress:
@@ -184,26 +184,33 @@ $AllScenarios = @(
   @{ Id='3'; Rg='azlrg3'; Cluster='azlcluster3'; Mode='full'     }
 )
 
-# Filter based on selection
-$Selected = if ($Scenario -eq 'all') { $AllScenarios } else { $AllScenarios | Where-Object { $_.Id -eq $Scenario } }
+# Filter based on selection (force array so single result still has Count = 1)
+if ($Scenario -eq 'all') {
+  $Selected = @($AllScenarios)
+} else {
+  $Selected = @($AllScenarios | Where-Object { $_.Id -eq $Scenario })
+}
+
 if (-not $Selected -or $Selected.Count -eq 0) {
   Write-Host "No scenarios selected (parameter: $Scenario)" -ForegroundColor Red
   exit 1
 }
 
-# When only one scenario selected allow overrides — apply them EARLY so all subsequent logic uses the overrides
+# Apply overrides only when exactly one scenario selected
 if ($Selected.Count -eq 1 -and ($ResourceGroupOverride -or $ClusterNameOverride)) {
   if ($ResourceGroupOverride) { $Selected[0].Rg = $ResourceGroupOverride }
   if ($ClusterNameOverride)  { $Selected[0].Cluster = $ClusterNameOverride }
   Write-Host "Applied overrides: RG=$($Selected[0].Rg) Cluster=$($Selected[0].Cluster)" -ForegroundColor DarkCyan
-
-  # propagate immediately for the whole run so any subsequent dot-sourced helpers pick them up
   $env:LOCALBOX_RG = $Selected[0].Rg
   $env:LOCALBOX_CLUSTER = $Selected[0].Cluster
   Write-Host "Runtime env set: LOCALBOX_RG=$($env:LOCALBOX_RG) LOCALBOX_CLUSTER=$($env:LOCALBOX_CLUSTER)" -ForegroundColor DarkCyan
 }
 
-Write-Stage "Selected scenario(s): $($Selected.Id -join ', ') (WhatIf=$WhatIfOnly Cleanup=$Cleanup)"
+# Debug (optional)
+Write-Host "DEBUG Bound params: $($PSBoundParameters.Keys -join ', ')" -ForegroundColor DarkGray
+Write-Host "DEBUG Override values: RGOverride='$ResourceGroupOverride' ClusterOverride='$ClusterNameOverride'" -ForegroundColor DarkGray
+
+Write-Stage "Selected scenario(s): $((($Selected | ForEach-Object { $_.Id }) -join ', ')) (WhatIf=$WhatIfOnly Cleanup=$Cleanup)"
 
 # Auto-enable post deploy for scenario 3 when it's the only selected scenario and user did not explicitly pass -PostDeploy or -SkipDeploy
 if ($Selected.Count -eq 1 -and $Selected[0].Id -eq '3' -and -not $PSBoundParameters.ContainsKey('PostDeploy') -and -not $SkipDeploy) {

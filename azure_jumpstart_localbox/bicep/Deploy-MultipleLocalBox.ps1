@@ -15,23 +15,92 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
 
 
 
- 1. azlrg1 / azlcluster1 / none
- 2. azlrg2 / azlcluster2 / validate
- 3. azlrg3 / azlcluster3 / full
 
-Selection:
-  -Scenario 1     # only scenario 1
-  -Scenario 2
-  -Scenario 3
-  -Scenario all   # (default) all three
+.SCENARIOS
+  Scenario 1: RG=azlrg1  Cluster=azlcluster1  Mode=none
+  Scenario 2: RG=azlrg2  Cluster=azlcluster2  Mode=validate
+  Scenario 3: RG=azlrg3  Cluster=azlcluster3  Mode=full (long-running; post actions auto-enabled unless explicitly disabled)
 
-Examples:
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -Cleanup -RemoveLocks
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario all -WhatIfOnly
+.PARAMETERS (most common)
+  -Scenario 1|2|3|all   Select which scenario(s) to deploy (default: all)
+  -ResourceGroupOverride <name>  Override RG (only when a single scenario selected)
+  -ClusterNameOverride  <name>   Override cluster name (only single scenario)
+  -PostDeploy                     Run post actions (auto ON for scenario 3 single-run unless you pass -PostDeploy:$false)
+  -SkipDeploy                     Skip main deployment; run only post actions (scenario 3 case: resume after long provisioning)
+  -InitialDelayMinutes <int>      Wait before polling readiness (defaults sized for scenario 3)
+  -MaxWaitMinutes <int>           Max polling window after initial delay
+  -PollIntervalMinutes <int>      Poll frequency (minutes)
+  -WhatIfOnly                     Perform what-if instead of actual deployment
+  -Cleanup                        Delete resource group(s) after deployment/what-if
+  -WaitForDeletion                Wait for RG deletions to finish
+  -RemoveLocks                    Remove resource locks prior to deletion
+  -SkipLogin                      Assume current az context is already correct
 
-Existing switches still apply to the filtered set.
+.NOTES ON VARIABLE FLOW
+  Tenant / Subscription are set inline here (easy to see & change if ever needed).
+  Scenario defaults (RG + Cluster + Mode) are defined in the $AllScenarios array.
+  Overrides apply only when exactly ONE scenario is selected.
+  Bicep parameters clusterName + clusterDeploymentMode are passed directly on the az deployment command.
+  Post actions call: Create-LogicalNetwork.ps1 and Create-VMImage.ps1 (which themselves use LocalBox.Vars.ps1 / $LocalBoxContext).
+
+.POST DEPLOY (SCENARIO 3)
+  Auto-enabled for a single scenario 3 run unless you explicitly disable via: -PostDeploy:$false
+  Includes:
+    1. Optional initial delay (provisioning buffer for large cluster deploy)
+    2. Poll readiness (looks for storage path prefix UserStorage2-)
+    3. Runs logical network + VM image scripts
+  Disable: -PostDeploy:$false
+  Run later only: -Scenario 3 -SkipDeploy -PostDeploy (plus overrides if used originally)
+
+.OVERRIDES EXAMPLES
+  Scenario 3, one-off new names with auto post deploy:
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4
+  Same but suppress post actions:
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -PostDeploy:$false
+  Resume post actions later (cluster already provisioning/deployed):
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -SkipDeploy -PostDeploy
+
+.GENERAL USAGE
+  Deploy all (no post actions for 1/2):
+    pwsh ./Deploy-MultipleLocalBox.ps1
+  Deploy scenario 2 only:
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2
+  What-if scenario 1:
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 1 -WhatIfOnly
+  Clean up after scenario 2 run (remove locks & wait):
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -Cleanup -RemoveLocks -WaitForDeletion
+
+.CLEANUP
+  -Cleanup deletes selected scenario RG(s) after deployment/what-if.
+  -RemoveLocks helps if RG has delete/update locks.
+  -WaitForDeletion blocks until deletion completes; else delete is async.
+
+.RETRY / RERUN SAFE PRACTICES
+  - If post actions partially succeeded, you can rerun with -Scenario 3 -SkipDeploy -PostDeploy.
+  - If image or logical network already exists, scripts may currently error; add existence checks if you need idempotent skips.
+
+.EXTENSIONS (OPTIONAL IDEAS)
+  Add a -ForcePost to recreate post resources.
+  Add existence checks to skip already-created logical network or image.
+  Add a delete-only script if teardown patterns become more complex.
+
+.EXAMPLES QUICK COPY
+  # Default all:
+  pwsh ./Deploy-MultipleLocalBox.ps1
+  # Scenario 3 (auto post actions):
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3
+  # Scenario 3 custom names + post:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4
+  # Scenario 3 custom names, skip post:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -PostDeploy:$false
+  # Post-only after deploy in progress:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -SkipDeploy -PostDeploy
+  # What-if only:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -WhatIfOnly
+  # Delete after run:
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 1 -Cleanup -WaitForDeletion
 #>
+
 [CmdletBinding()]
 param(
   [string]$TemplateFile = 'main.bicep',
@@ -47,7 +116,7 @@ param(
 
   # Post-deploy orchestration (applies only when exactly one scenario selected)
   [switch]$PostDeploy,                # Enable post actions (logical network + VM image)
-  [int]$InitialDelayMinutes = 240,      # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
+  [int]$InitialDelayMinutes = 240,     # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
   [int]$MaxWaitMinutes = 480,         # Polling window
   [int]$PollIntervalMinutes = 10,     # Poll cadence
   [switch]$SkipDeploy,                # Run only post steps (assumes deploy already done)
@@ -180,16 +249,30 @@ function Test-ClusterReady {
   return $false
 }
 
+# In Deploy-MultipleLocalBox.ps1
+
 function Invoke-PostActions {
   param([string]$ResourceGroup,[string]$ClusterName)
-  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-  $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
-  $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
 
-  Write-Stage "Post: Logical Network" 'Green'
-  & $logicalNetScript
-  Write-Stage "Post: VM Image" 'Green'
-  & $vmImageScript
+  # Propagate overrides to sub scripts via env so LocalBox.Vars.ps1 picks them up
+  $prevRg = $env:LOCALBOX_RG
+  $prevCl = $env:LOCALBOX_CLUSTER
+  $env:LOCALBOX_RG = $ResourceGroup
+  $env:LOCALBOX_CLUSTER = $ClusterName
+  try {
+    $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
+    $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
+
+    Write-Stage "Post: Logical Network (RG=$ResourceGroup Cluster=$ClusterName)" 'Green'
+    & $logicalNetScript
+    Write-Stage "Post: VM Image (RG=$ResourceGroup Cluster=$ClusterName)" 'Green'
+    & $vmImageScript
+  } finally {
+    # Restore previous env values (optional but cleaner)
+    if ($null -ne $prevRg) { $env:LOCALBOX_RG = $prevRg } else { Remove-Item Env:LOCALBOX_RG -ErrorAction SilentlyContinue }
+    if ($null -ne $prevCl) { $env:LOCALBOX_CLUSTER = $prevCl } else { Remove-Item Env:LOCALBOX_CLUSTER -ErrorAction SilentlyContinue }
+  }
 }
 
 # When only one scenario selected allow overrides

@@ -109,7 +109,18 @@ Start-Transcript -Path "$($LocalBoxConfig.Paths["LogsDir"])\Bootstrap.log"
 #################################################################################
 # Extending C:\ partition to the maximum size
 Write-Host "Extending C:\ partition to the maximum size"
-Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
+try {
+  $part = Get-Partition -DriveLetter C -ErrorAction Stop
+  $sizes = Get-PartitionSupportedSize -DiskNumber $part.DiskNumber -PartitionNumber $part.PartitionNumber -ErrorAction Stop
+  if ($sizes.SizeMax -gt $part.Size) {
+    Write-Host "Extending C: to max size..."
+    Resize-Partition -DriveLetter C -Size $sizes.SizeMax -ErrorAction Stop
+  } else {
+    Write-Host "C: already at max size; skipping resize."
+  }
+} catch {
+  Write-Warning "Skipping C: partition resize (Get-PartitionSupportedSize unsupported here or no growth possible): $($_.Exception.Message)"
+}
 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
@@ -136,6 +147,7 @@ if (-not (Test-Path "$ConfiguratorDir\installed.marker")) {
   }
   New-Item -Path "$ConfiguratorDir\installed.marker" -ItemType File -Force | Out-Null
 }
+
 
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBoxLogonScript.ps1") -OutFile $LocalBoxPath\LocalBoxLogonScript.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/New-LocalBoxCluster.ps1") -OutFile $LocalBoxPath\New-LocalBoxCluster.ps1
@@ -362,7 +374,15 @@ Write-Host "Registry setting applied successfully. fClientDisableUDP set to $reg
 Write-Header "Installing Hyper-V."
 Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
 Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart
+Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoRestart
+
+$needReboot = $true
+
+if ($needReboot) {
+  $rebootTime = (Get-Date).AddMinutes(3).ToString('HH:mm')
+  schtasks /Create /RU SYSTEM /SC ONCE /TN LocalBoxPostBootstrapReboot /TR "powershell -NoProfile -WindowStyle Hidden -Command Restart-Computer -Force" /ST $rebootTime /F | Out-Null
+  Write-Host "Scheduled one-time reboot at $rebootTime (task: LocalBoxPostBootstrapReboot)."
+}
 
 Write-Header "Configuring Windows Defender exclusions for Hyper-V."
 

@@ -109,46 +109,11 @@ Start-Transcript -Path "$($LocalBoxConfig.Paths["LogsDir"])\Bootstrap.log"
 #################################################################################
 # Extending C:\ partition to the maximum size
 Write-Host "Extending C:\ partition to the maximum size"
-try {
-  $part = Get-Partition -DriveLetter C -ErrorAction Stop
-  $sizes = Get-PartitionSupportedSize -DiskNumber $part.DiskNumber -PartitionNumber $part.PartitionNumber -ErrorAction Stop
-  if ($sizes.SizeMax -gt $part.Size) {
-    Write-Host "Extending C: to max size..."
-    Resize-Partition -DriveLetter C -Size $sizes.SizeMax -ErrorAction Stop
-  } else {
-    Write-Host "C: already at max size; skipping resize."
-  }
-} catch {
-  Write-Warning "Skipping C: partition resize (Get-PartitionSupportedSize unsupported here or no growth possible): $($_.Exception.Message)"
-}
+Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
 Invoke-WebRequest https://aka.ms/wacdownload -OutFile "$($LocalBoxConfig.Paths["WACDir"])\WindowsAdminCenter.msi"
-
-# Configurator App install
-$ConfiguratorDir = "C:\LocalBox\ConfiguratorApp"
-New-Item -Path $ConfiguratorDir -ItemType Directory -Force | Out-Null
-Invoke-WebRequest https://aka.ms/ConfiguratorAppForHCI -OutFile "$ConfiguratorDir\ConfiguratorApp.exe"
-
-# Install (simple fire-and-wait). Tries quiet first; falls back to normal launch.
-$installer = "$ConfiguratorDir\ConfiguratorApp.exe"
-if (-not (Test-Path "$ConfiguratorDir\installed.marker")) {
-  $ran = $false
-  foreach ($arg in '/quiet','/qn','/s') {
-    try {
-      Start-Process -FilePath $installer -ArgumentList $arg -Wait -ErrorAction Stop
-      $ran = $true
-      break
-    } catch { }
-  }
-  if (-not $ran) {
-    Start-Process -FilePath $installer -Wait
-  }
-  New-Item -Path "$ConfiguratorDir\installed.marker" -ItemType File -Force | Out-Null
-}
-
-
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBoxLogonScript.ps1") -OutFile $LocalBoxPath\LocalBoxLogonScript.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/New-LocalBoxCluster.ps1") -OutFile $LocalBoxPath\New-LocalBoxCluster.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/Configure-AKSWorkloadCluster.ps1") -OutFile $LocalBoxPath\Configure-AKSWorkloadCluster.ps1
@@ -185,17 +150,8 @@ foreach ($module in $modules) {
 
 Connect-AzAccount -Identity
 
-$DeploymentProgressString = "Started bootstrap-script..."
-
-$tags = Get-AzResourceGroup -Name $resourceGroup | Select-Object -ExpandProperty Tags
-
-if ($null -ne $tags) {
-    $tags["DeploymentProgress"] = $DeploymentProgressString
-} else {
-    $tags = @{"DeploymentProgress" = $DeploymentProgressString}
-}
-
-$null = Set-AzResourceGroup -ResourceGroupName $resourceGroup -Tag $tags
+# (Tag removal) Previously updated RG tag DeploymentProgress here. Replaced with log only.
+Write-Host "[Progress] Started bootstrap-script... (RG tagging disabled)"
 
 ##############################################################
 # Installing PowerShell 7
@@ -239,17 +195,8 @@ Write-Host "Enabling CredSSP."
 Enable-WSManCredSSP -Role Server -Force | Out-Null
 Enable-WSManCredSSP -Role Client -DelegateComputer $Env:COMPUTERNAME -Force | Out-Null
 
-$DeploymentProgressString = "Restarting and installing WinGet packages..."
-
-$tags = Get-AzResourceGroup -Name $resourceGroup | Select-Object -ExpandProperty Tags
-
-if ($null -ne $tags) {
-    $tags["DeploymentProgress"] = $DeploymentProgressString
-} else {
-    $tags = @{"DeploymentProgress" = $DeploymentProgressString}
-}
-
-$null = Set-AzResourceGroup -ResourceGroupName $resourceGroup -Tag $tags
+# (Tag removal) Previously updated RG tag DeploymentProgress here. Replaced with log only.
+Write-Host "[Progress] Restarting and installing WinGet packages... (RG tagging disabled)"
 
 $ScheduledTaskExecutable = "pwsh.exe"
 
@@ -303,9 +250,6 @@ Set-ItemProperty -Path $oobePath -Name $oobeProperty -Value $oobeValue
 Write-Host "Registry keys and values for Diagnostic Data settings have been set successfully."
 
 # Change RDP Port
-#if (($rdpPort -ne $null) -and ($rdpPort -ne "") # proposed fix if RDP is blocked {
-
-
 Write-Host "Updating RDP Port - RDP port number from configuration is $rdpPort"
 if (($rdpPort -ne $null) -and ($rdpPort -ne "") -and ($rdpPort -ne "3389")) {
   Write-Host "Configuring RDP port number to $rdpPort"
@@ -324,15 +268,15 @@ if (($rdpPort -ne $null) -and ($rdpPort -ne "") -and ($rdpPort -ne "3389")) {
 
   #Setup firewall rules
   if ($rdpPort -eq 3389) {
-    netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+    netsh advfirewall firewall set rule group="remote desktop" new Enable=Yes
   }
   else {
     $systemroot = get-content env:systemroot
     netsh advfirewall firewall add rule name="Remote Desktop - Custom Port" dir=in program=$systemroot\system32\svchost.exe service=termservice action=allow protocol=TCP localport=$RDPPort enable=yes
   }
-}
 
-Write-Host "RDP port configuration complete."
+  Write-Host "RDP port configuration complete."
+}
 
 # Workaround for https://github.com/microsoft/azure_arc/issues/3035
 
@@ -374,15 +318,7 @@ Write-Host "Registry setting applied successfully. fClientDisableUDP set to $reg
 Write-Header "Installing Hyper-V."
 Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
 Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoRestart
-
-$needReboot = $true
-
-if ($needReboot) {
-  $rebootTime = (Get-Date).AddMinutes(3).ToString('HH:mm')
-  schtasks /Create /RU SYSTEM /SC ONCE /TN LocalBoxPostBootstrapReboot /TR "powershell -NoProfile -WindowStyle Hidden -Command Restart-Computer -Force" /ST $rebootTime /F | Out-Null
-  Write-Host "Scheduled one-time reboot at $rebootTime (task: LocalBoxPostBootstrapReboot)."
-}
+Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart
 
 Write-Header "Configuring Windows Defender exclusions for Hyper-V."
 

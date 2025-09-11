@@ -118,20 +118,6 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-03-0
   location: location
   properties: {
     securityRules: [
-      {
-        name: 'allow_rdp_3389'
-        properties: {
-          priority: 100
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: '*'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '3389'
-          description: 'Allow RDP'
-        }
-      }
     ]
   }
   tags: resourceTags

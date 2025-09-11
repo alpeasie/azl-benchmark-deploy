@@ -89,8 +89,50 @@ Set-VMHost -VirtualHardDiskPath $HostVMPath -VirtualMachinePath $HostVMPath -Ena
 Write-Host "Copying VHDX Files to Host virtualization drive"
 $guipath = "$HostVMPath\GUI.vhdx"
 $azlocalpath = "$HostVMPath\AzL-node.vhdx"
-Copy-Item -Path $LocalBoxConfig.guiVHDXPath -Destination $guipath -Force | Out-Null
-Copy-Item -Path $LocalBoxConfig.AzLocalVHDXPath -Destination $azlocalpath -Force | Out-Null
+
+
+$copies = @(
+    @{ Source = $LocalBoxConfig.guiVHDXPath;     Dest = $guipath    ; Label = 'GUI'    }
+    @{ Source = $LocalBoxConfig.AzLocalVHDXPath; Dest = $azlocalpath; Label = 'AzLocal'}
+)
+
+foreach ($c in $copies) {
+
+    if (-not (Test-Path $c.Source)) { throw "Source VHDX missing: $($c.Source)" }
+
+    $destDir = Split-Path -Path $c.Dest
+    if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir -Force | Out-Null }
+
+    if (Test-Path $c.Dest) {
+        if ( (Get-Item $c.Dest).Length -eq (Get-Item $c.Source).Length ) {
+            Write-Host "[$($c.Label)] Destination already present & size matches; skipping copy."
+            continue
+        } else {
+            Write-Host "[$($c.Label)] Existing destination size mismatch; recopying..."
+            Remove-Item -Path $c.Dest -Force
+        }
+    }
+
+    $attempt = 0
+    do {
+        $attempt++
+        try {
+            Write-Host "[$($c.Label)] Copy attempt $attempt..."
+            Copy-Item -Path $c.Source -Destination $c.Dest -Force
+            if ( (Get-Item $c.Source).Length -ne (Get-Item $c.Dest).Length ) {
+                throw "Size mismatch after copy."
+            }
+            Write-Host "[$($c.Label)] Copy successful."
+            break
+        } catch {
+            Write-Warning "[$($c.Label)] Copy failed attempt $($_.Exception.Message)"
+            Start-Sleep -Seconds (5 * $attempt)
+            if ($attempt -ge 3) { throw "[$($c.Label)] Failed after $attempt attempts." }
+        }
+    } while ($true)
+}
+
+
 
 ################################################################################
 # Create the three nested Virtual Machines
@@ -117,26 +159,28 @@ foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
 }
 
 # Enable vTPM on all node VMs (minimal change). Add condition if you later want only scenario 1:
-# if ($env:clusterDeploymentMode -eq 'none') { ... }
-try {
-    foreach ($node in $LocalBoxConfig.NodeHostConfig) {
-        $name = $node.Hostname
-        $vmObj = Get-VM -Name $name -ErrorAction Stop
-        if ($vmObj.Generation -ne 2) {
-            Write-Warning "VM $name not Gen2; cannot add vTPM."
-            continue
+if ($env:clusterDeploymentMode -eq 'none') {
+    try {
+        foreach ($node in $LocalBoxConfig.NodeHostConfig) {
+            $name = $node.Hostname
+            $vmObj = Get-VM -Name $name -ErrorAction Stop
+            if ($vmObj.Generation -ne 2) {
+                Write-Warning "VM $name not Gen2; cannot add vTPM."
+                continue
+            }
+            if (-not (Get-VMTrustedPlatformModule -VMName $name -ErrorAction SilentlyContinue)) {
+                Write-Host "Adding vTPM to $name..." -ForegroundColor Cyan
+                Add-VMTPM -VMName $name
+                Write-Host "vTPM enabled on $name." -ForegroundColor Green
+            } else {
+                Write-Host "vTPM already present on $name (skipping)." -ForegroundColor DarkGray
+            }
         }
-        if (-not (Get-VMTrustedPlatformModule -VMName $name -ErrorAction SilentlyContinue)) {
-            Write-Host "Adding vTPM to $name..." -ForegroundColor Cyan
-            Add-VMTPM -VMName $name
-            Write-Host "vTPM enabled on $name." -ForegroundColor Green
-        } else {
-            Write-Host "vTPM already present on $name (skipping)." -ForegroundColor DarkGray
-        }
+    } catch {
+        Write-Warning "vTPM enable loop encountered an error: $($_.Exception.Message)"
     }
-} catch {
-    Write-Warning "vTPM enable loop encountered an error: $($_.Exception.Message)"
 }
+
 
 # Start Virtual Machines
 Write-Host "[Build cluster - Step 5/11] Starting VMs..." -ForegroundColor Green

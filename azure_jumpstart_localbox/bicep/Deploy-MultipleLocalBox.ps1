@@ -90,7 +90,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   # Scenario 3 (auto post actions):
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg31 -ClusterNameOverride azlcluster
   # Scenario 3 custom names + post:
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 1 -ResourceGroupOverride azlrg11 -ClusterNameOverride azlcluster11
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 1 -ResourceGroupOverride p1azlrg1 -ClusterNameOverride p1azlrg1
   # Scenario 3 custom names, skip post:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -ResourceGroupOverride azlrg21 -ClusterNameOverride azlcluster21
   # Post-only after deploy in progress:

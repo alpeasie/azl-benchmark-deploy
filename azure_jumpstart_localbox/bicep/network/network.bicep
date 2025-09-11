@@ -118,17 +118,6 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-03-0
   location: location
   properties: {
     securityRules: [
-
-    ]
-  }
-  tags: resourceTags
-}
-
-resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-05-01' = if (deployBastion == true) {
-  name: bastionNetworkSecurityGroupName
-  location: location
-  properties: {
-    securityRules: [
       {
         name: 'allow_rdp_3389'
         properties: {
@@ -143,6 +132,16 @@ resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@20
           description: 'Allow RDP'
         }
       }
+    ]
+  }
+  tags: resourceTags
+}
+
+resource bastionNetworkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-05-01' = if (deployBastion == true) {
+  name: bastionNetworkSecurityGroupName
+  location: location
+  properties: {
+    securityRules: [
     ]
   }
   tags: resourceTags

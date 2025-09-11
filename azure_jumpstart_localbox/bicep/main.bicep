@@ -145,6 +145,12 @@ module hostDeployment 'host/host.bicep' = {
     enableAzureSpotPricing: enableAzureSpotPricing
     azureLocalInstanceLocation: azureLocalInstanceLocation
     clusterName: clusterName
+
+    // NEW: disable all Arc / RB / AKS when mode = none
+    registerCluster: clusterDeploymentMode != 'none'
+    deployAKSArc:    clusterDeploymentMode != 'none'
+    deployResourceBridge: clusterDeploymentMode != 'none'
+
   }
 }
 

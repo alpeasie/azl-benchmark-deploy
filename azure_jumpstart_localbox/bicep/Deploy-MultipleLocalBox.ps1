@@ -54,7 +54,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
 
 .OVERRIDES EXAMPLES
   Scenario 3, one-off new names with auto post deploy:
-    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4
+    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg6 -ClusterNameOverride azlcluster6
   Same but suppress post actions:
     pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -PostDeploy:$false
   Resume post actions later (cluster already provisioning/deployed):

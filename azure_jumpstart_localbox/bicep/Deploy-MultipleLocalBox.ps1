@@ -116,7 +116,7 @@ param(
 
   # Post-deploy orchestration (applies only when exactly one scenario selected)
   [switch]$PostDeploy,                # Enable post actions (logical network + VM image)
-  [int]$InitialDelayMinutes = 240,     # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
+  [int]$InitialDelayMinutes = 150,     # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
   [int]$MaxWaitMinutes = 480,         # Polling window
   [int]$PollIntervalMinutes = 10,     # Poll cadence
   [switch]$SkipDeploy,                # Run only post steps (assumes deploy already done)
@@ -244,7 +244,7 @@ function Invoke-ScenarioDeployment {
     az deployment group create `
       -g $rg -n $deployName `
       -f $ResolvedTemplate.Path --parameters @$($ResolvedParams.Path) `
-      clusterName=$cluster clusterDeploymentMode=$mode
+      clusterName=$cluster clusterDeploymentMode=$mode; if ($LASTEXITCODE -ne 0) { Write-Host "Single retry after transient failure..." -ForegroundColor Yellow; Start-Sleep 45; az deployment group create -g $rg -n $deployName -f $ResolvedTemplate.Path --parameters @$($ResolvedParams.Path) clusterName=$cluster clusterDeploymentMode=$mode }
   }
 
   if ($Cleanup) {

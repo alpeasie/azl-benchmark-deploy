@@ -114,6 +114,7 @@ Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
 Invoke-WebRequest https://aka.ms/wacdownload -OutFile "$($LocalBoxConfig.Paths["WACDir"])\WindowsAdminCenter.msi"
+Invoke-WebRequest https://aka.ms/ConfiguratorAppForHCI -OutFile "$($LocalBoxConfig.Paths["ConfiguratorDir"])\ConfiguratorApp.exe"
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBoxLogonScript.ps1") -OutFile $LocalBoxPath\LocalBoxLogonScript.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/New-LocalBoxCluster.ps1") -OutFile $LocalBoxPath\New-LocalBoxCluster.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/Configure-AKSWorkloadCluster.ps1") -OutFile $LocalBoxPath\Configure-AKSWorkloadCluster.ps1

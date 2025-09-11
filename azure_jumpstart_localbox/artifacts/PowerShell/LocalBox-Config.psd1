@@ -13,6 +13,7 @@
         SDNDir = "C:\LocalBox\SDN"
         KVDir = "C:\LocalBox\KeyVault"
         WACDir = "C:\LocalBox\Windows Admin Center"
+        ConfiguratorDir = "C:\LocalBox\ConfiguratorApp"
         AgentScriptDir = "C:\LocalBox\agentScript"
         ToolsDir = "C:\Tools"
         TempDir = "C:\Temp"

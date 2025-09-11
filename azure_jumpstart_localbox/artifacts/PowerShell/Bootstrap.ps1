@@ -150,9 +150,17 @@ foreach ($module in $modules) {
 
 Connect-AzAccount -Identity
 
-# (Tag removal) Previously updated RG tag DeploymentProgress here. Replaced with log only.
-Write-Host "[Progress] Started bootstrap-script... (RG tagging disabled)"
+$DeploymentProgressString = "Started bootstrap-script..."
 
+$tags = Get-AzResourceGroup -Name $resourceGroup | Select-Object -ExpandProperty Tags
+
+if ($null -ne $tags) {
+    $tags["DeploymentProgress"] = $DeploymentProgressString
+} else {
+    $tags = @{"DeploymentProgress" = $DeploymentProgressString}
+}
+
+$null = Set-AzResourceGroup -ResourceGroupName $resourceGroup -Tag $tags
 ##############################################################
 # Installing PowerShell 7
 ##############################################################

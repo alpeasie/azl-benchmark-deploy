@@ -104,7 +104,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
 [CmdletBinding()]
 param(
   [string]$TemplateFile = 'main.bicep',
-  [string]$ParameterFile = 'main.bicepparam',
+  [string]$ParameterFile = 'main.parameters.json',
   [string]$Location = 'eastus',
 
   [ValidateSet('1','2','3','all')]

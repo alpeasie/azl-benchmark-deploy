@@ -60,16 +60,6 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   Resume post actions later (cluster already provisioning/deployed):
     pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg4 -ClusterNameOverride azlcluster4 -SkipDeploy -PostDeploy
 
-.GENERAL USAGE
-  Deploy all (no post actions for 1/2):
-    pwsh ./Deploy-MultipleLocalBox.ps1
-  Deploy scenario 2 only:
-    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2
-  What-if scenario 1:
-    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 1 -WhatIfOnly
-  Clean up after scenario 2 run (remove locks & wait):
-    pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -Cleanup -RemoveLocks -WaitForDeletion
-
 .CLEANUP
   -Cleanup deletes selected scenario RG(s) after deployment/what-if.
   -RemoveLocks helps if RG has delete/update locks.
@@ -94,7 +84,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   # Scenario 3 custom names, skip post:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -ResourceGroupOverride azlrg21 -ClusterNameOverride azlcluster21
   # Post-only after deploy in progress:
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -SkipDeploy -PostDeploy
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -SkipDeploy -PostDeploy -ResourceGroupOverride azlrg31 -ClusterNameOverride azlcluster
   # What-if only:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -ResourceGroupOverride azlrg2t -ClusterNameOverride azlcluster2t
   # Delete after run:
@@ -270,20 +260,32 @@ function Test-ClusterReady {
 
 function Invoke-PostActions {
   param([string]$ResourceGroup,[string]$ClusterName)
-  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-  $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
-  $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
 
-  # propagate env again (defensive)
+  if (-not (Test-Path $ScriptRoot)) { throw "Script root not found: $ScriptRoot" }
+
+  $logicalNetScript = Join-Path $ScriptRoot 'Create-LogicalNetwork.ps1'
+  $vmImageScript    = Join-Path $ScriptRoot 'Create-VMImage.ps1'
+
+  foreach ($p in @($logicalNetScript,$vmImageScript)) {
+    if (-not (Test-Path $p)) { throw "Required post script missing: $p" }
+  }
+
   $env:LOCALBOX_RG = $ResourceGroup
   $env:LOCALBOX_CLUSTER = $ClusterName
 
   Write-Stage "Post: Logical Network" 'Green'
-  # Call post scripts with explicit parameters so they don't rely solely on env/defaults
-  & $logicalNetScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
+  try {
+    & $logicalNetScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName -ErrorAction Stop
+  } catch {
+    throw "Logical network script failed: $($_.Exception.Message)"
+  }
 
   Write-Stage "Post: VM Image" 'Green'
-  & $vmImageScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
+  try {
+    & $vmImageScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName -ErrorAction Stop
+  } catch {
+    throw "VM image script failed: $($_.Exception.Message)"
+  }
 }
 
 foreach ($s in $Selected) {

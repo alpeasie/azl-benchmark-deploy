@@ -1,10 +1,10 @@
 #requires -Version 7.0
-$ErrorActionPreference = 'Stop'
-
 param(
   [string]$ResourceGroup,
   [string]$ClusterName
 )
+
+$ErrorActionPreference = 'Stop'
 
 # Dot-source shared vars with explicit values (falls back to env/defaults inside LocalBox.Vars.ps1)
 . "$PSScriptRoot\LocalBox.Vars.ps1" -ResourceGroup $ResourceGroup -ClusterName $ClusterName -EnsureLogin

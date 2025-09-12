@@ -1,11 +1,11 @@
 #requires -Version 7.0
-$ErrorActionPreference = "Stop"
-$ProgressPreference = 'SilentlyContinue'
-
 param(
   [string]$ResourceGroup,
   [string]$ClusterName
 )
+
+$ErrorActionPreference = "Stop"
+$ProgressPreference = 'SilentlyContinue'
 
 # Dot-source shared vars (ensures login & sets $LocalBoxContext), prefer explicit params
 . "$PSScriptRoot\LocalBox.Vars.ps1" -ResourceGroup $ResourceGroup -ClusterName $ClusterName -EnsureLogin

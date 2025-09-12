@@ -158,26 +158,32 @@ foreach ($VM in $LocalBoxConfig.NodeHostConfig) {
     Set-AzLocalNodeVhdx -HostName $VM.Hostname -IPAddress $VM.IP -VMMac $mac  -LocalBoxConfig $LocalBoxConfig
 }
 
-# Enable vTPM on all node VMs (minimal change). Add condition if you later want only scenario 1:
+# Enable vTPM on all node VMs only when clusterDeploymentMode = 'none'
 if ($env:clusterDeploymentMode -eq 'none') {
-    try {
-        foreach ($node in $LocalBoxConfig.NodeHostConfig) {
-            $name = $node.Hostname
+    Write-Host "Attempting to enable vTPM on nested node VMs (mode=none)..." -ForegroundColor Green
+    foreach ($node in $LocalBoxConfig.NodeHostConfig) {
+        $name = $node.Hostname
+        try {
             $vmObj = Get-VM -Name $name -ErrorAction Stop
             if ($vmObj.Generation -ne 2) {
-                Write-Warning "VM $name not Gen2; cannot add vTPM."
+                Write-Warning "VM $name is not Generation 2; cannot enable vTPM."
                 continue
             }
-            if (-not (Get-VMTrustedPlatformModule -VMName $name -ErrorAction SilentlyContinue)) {
-                Write-Host "Adding vTPM to $name..." -ForegroundColor Cyan
-                Add-VMTPM -VMName $name
-                Write-Host "vTPM enabled on $name." -ForegroundColor Green
+
+            # Hyper-V uses a key protector; ensure one exists before enabling TPM
+            $sec = Get-VMSecurity -VMName $name -ErrorAction Stop
+            if (-not $sec.TpmEnabled) {
+                Write-Host "Configuring key protector + enabling vTPM on $name..." -ForegroundColor Cyan
+                # Use local (unencrypted) key protector – sufficient for lab / nested scenario
+                Set-VMKeyProtector -VMName $name -NewLocalKeyProtector -ErrorAction Stop
+                Enable-VMTPM -VMName $name -ErrorAction Stop
+                Write-Host "vTPM successfully enabled on $name." -ForegroundColor Green
             } else {
-                Write-Host "vTPM already present on $name (skipping)." -ForegroundColor DarkGray
+                Write-Host "vTPM already enabled on $name (skipping)." -ForegroundColor DarkGray
             }
+        } catch {
+            Write-Warning "Failed to enable vTPM on $name : $($_.Exception.Message)"
         }
-    } catch {
-        Write-Warning "vTPM enable loop encountered an error: $($_.Exception.Message)"
     }
 }
 

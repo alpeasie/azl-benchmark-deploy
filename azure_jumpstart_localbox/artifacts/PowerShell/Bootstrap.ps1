@@ -324,10 +324,9 @@ Set-ItemProperty -Path $registryPath -Name $registryName -Value $registryValue -
 Write-Host "Registry setting applied successfully. fClientDisableUDP set to $registryValue"
 
 # Install Hyper-V and reboot
-Write-Header "Installing Hyper-V."
+Write-Header "Installing Optional features."
 Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
 Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
-Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart
 
 Write-Header "Configuring Windows Defender exclusions for Hyper-V."
 
@@ -356,8 +355,26 @@ Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmwp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmsp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmcompute.exe"
 
-# Clean up Bootstrap.log
+
+Write-Header "Installing Hyper-V (no automatic reboot)."
+$hv = Get-WindowsFeature -Name Hyper-V
+if ($hv.InstallState -ne 'Installed') {
+    Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart:$false
+}
+
+# Determine if a reboot is needed
+$rebootPending = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -or
+                 ((Get-WindowsFeature -Name Hyper-V).InstallState -ne 'Installed')
+
 Write-Header "Clean up Bootstrap.log."
 Stop-Transcript
 $logSuppress = Get-Content "$($LocalBoxConfig.Paths.LogsDir)\Bootstrap.log" | Where-Object { $_ -notmatch "Host Application: powershell.exe" }
 $logSuppress | Set-Content "$($LocalBoxConfig.Paths.LogsDir)\Bootstrap.log" -Force
+
+if ($rebootPending) {
+    Write-Host "[Bootstrap] Controlled reboot to finalize Hyper-V."
+    Restart-Computer -Force
+    return
+} else {
+    Write-Host "[Bootstrap] No reboot required after Hyper-V installation."
+}

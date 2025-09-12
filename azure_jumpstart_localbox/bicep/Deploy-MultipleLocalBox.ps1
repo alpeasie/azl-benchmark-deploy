@@ -94,7 +94,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   # Scenario 3 custom names, skip post:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -ResourceGroupOverride azlrg21 -ClusterNameOverride azlcluster21
   # Post-only after deploy in progress:
-  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -SkipDeploy -PostDeploy
+  pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -SkipDeploy -PostDeploy -ResourceGroupOverride azlrg31 -ClusterNameOverride azlcluster31 -InitialDelayMinutes 0 -PollIntervalMinutes 1 -MaxWaitMinutes 5
   # What-if only:
   pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 2 -ResourceGroupOverride azlrg2t -ClusterNameOverride azlcluster2t
   # Delete after run:
@@ -270,20 +270,51 @@ function Test-ClusterReady {
 
 function Invoke-PostActions {
   param([string]$ResourceGroup,[string]$ClusterName)
-  $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-  $logicalNetScript = Join-Path $scriptRoot 'Create-LogicalNetwork.ps1'
-  $vmImageScript    = Join-Path $scriptRoot 'Create-VMImage.ps1'
-
-  # propagate env again (defensive)
   $env:LOCALBOX_RG = $ResourceGroup
   $env:LOCALBOX_CLUSTER = $ClusterName
-
   Write-Stage "Post: Logical Network" 'Green'
-  # Call post scripts with explicit parameters so they don't rely solely on env/defaults
-  & $logicalNetScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
-
+  .\Create-LogicalNetwork.ps1 -ResourceGroup $ResourceGroup -ClusterName $ClusterName
   Write-Stage "Post: VM Image" 'Green'
-  & $vmImageScript -ResourceGroup $ResourceGroup -ClusterName $ClusterName
+  .\Create-VMImage.ps1 -ResourceGroup $ResourceGroup -ClusterName $ClusterName
+}
+
+function Get-ClusterReadiness {
+  param(
+    [string]$ResourceGroup,
+    [string]$ClusterName
+  )
+
+  $result = [ordered]@{
+    ClusterProvisioningState = $null
+    StoragePathReady         = $false
+    Ready                    = $false
+    Message                  = ''
+  }
+
+  try {
+    $clusterState = az stack-hci cluster show -g $ResourceGroup -n $ClusterName --query 'provisioningState' -o tsv 2>$null
+    if ($clusterState) { $result.ClusterProvisioningState = $clusterState }
+  } catch {
+    $result.Message += "cluster query failed: $($_.Exception.Message); "
+  }
+
+  try {
+    $sp = az stack-hci-vm storagepath list --resource-group $ResourceGroup --query "[?starts_with(name, 'UserStorage2-')].id | [0]" -o tsv 2>$null
+    if ($sp -and $sp.Trim()) { $result.StoragePathReady = $true }
+  } catch {
+    $result.Message += "storage path query failed: $($_.Exception.Message); "
+  }
+
+  if ($result.ClusterProvisioningState -eq 'Succeeded' -and $result.StoragePathReady) {
+    $result.Ready = $true
+    if (-not $result.Message) { $result.Message = 'Cluster provisioning succeeded and storage path present.' }
+  } else {
+    if (-not $result.Message) {
+      $result.Message = 'Waiting for provisioning=Succeeded and storage path.'
+    }
+  }
+
+  [pscustomobject]$result
 }
 
 foreach ($s in $Selected) {
@@ -307,13 +338,17 @@ foreach ($s in $Selected) {
     }
     $deadline = (Get-Date).AddMinutes($MaxWaitMinutes)
     $poll = 0
-    while (-not (Test-ClusterReady -ResourceGroup $rg)) {
-      if ((Get-Date) -gt $deadline) { throw "Timeout: cluster not ready within $MaxWaitMinutes minutes" }
+    while ($true) {
+      $status = Get-ClusterReadiness -ResourceGroup $rg -ClusterName $cluster
+      if ($status.Ready) { break }
+      if ((Get-Date) -gt $deadline) {
+        throw "Timeout after $MaxWaitMinutes minutes. Last status: $( $status | ConvertTo-Json -Compress )"
+      }
       $poll++
-      Write-Host "Poll #$poll not ready; waiting $PollIntervalMinutes min..." -ForegroundColor DarkGray
+      Write-Host ("Poll #{0}: provisioning={1} storagePath={2} -> waiting {3} min..." -f $poll,$status.ClusterProvisioningState,$status.StoragePathReady,$PollIntervalMinutes) -ForegroundColor DarkGray
       Start-Sleep -Seconds ($PollIntervalMinutes * 60)
     }
-    Write-Host "Cluster readiness signal detected; running post actions." -ForegroundColor Green
+    Write-Host ("Cluster readiness confirmed: provisioning={0} storagePath={1}" -f $status.ClusterProvisioningState,$status.StoragePathReady) -ForegroundColor Green
     Invoke-PostActions -ResourceGroup $rg -ClusterName $cluster
   }
 }

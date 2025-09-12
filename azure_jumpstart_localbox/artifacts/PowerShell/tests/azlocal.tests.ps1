@@ -43,12 +43,18 @@ Describe "<vm>" -ForEach $VMs {
         $vmobject = Get-VM -Name $vm
         $vmobject.State | Should -Be "Running"
     }
-    It "Azure Arc Connected Machine exists" {
-        $connectedMachine = Get-AzConnectedMachine -Name $vm -ResourceGroupName $env:resourceGroup -SubscriptionId $env:subscriptionId
-        $connectedMachine | Should -Not -BeNullOrEmpty
-    }
-    It "Azure Arc Connected Machine is connected" {
-        $connectedMachine = Get-AzConnectedMachine -Name $vm -ResourceGroupName $env:resourceGroup -SubscriptionId $env:subscriptionId
-        $connectedMachine.Status | Should -Be "Connected"
+    if ($env:clusterDeploymentMode -ne 'none') {
+        It "Azure Arc Connected Machine exists" {
+            $connectedMachine = Get-AzConnectedMachine -Name $vm -ResourceGroupName $env:resourceGroup -SubscriptionId $env:subscriptionId
+            $connectedMachine | Should -Not -BeNullOrEmpty
+        }
+        It "Azure Arc Connected Machine is connected" {
+            $connectedMachine = Get-AzConnectedMachine -Name $vm -ResourceGroupName $env:resourceGroup -SubscriptionId $env:subscriptionId
+            $connectedMachine.Status | Should -Be "Connected"
+        }
+    } else {
+        It "Arc onboarding intentionally skipped in mode=none" {
+            $true | Should -BeTrue
+        }
     }
 }

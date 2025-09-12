@@ -251,8 +251,11 @@ if ($env:clusterDeploymentMode -eq 'none') {
 }
 
 Invoke-AzureEdgeBootstrap -LocalBoxConfig $LocalBoxConfig -localCred $localCred
-Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
-
+if ($env:clusterDeploymentMode -eq 'none') {
+    Write-Host "Mode=none: skipping Set-AzLocalDeployPrereqs (Arc onboarding)." -ForegroundColor Yellow
+} else {
+    Set-AzLocalDeployPrereqs -LocalBoxConfig $LocalBoxConfig -localCred $localCred -domainCred $domainCred
+}
 & "$Env:LocalBoxDir\Generate-ARM-Template.ps1"
 
 #######################################################################################

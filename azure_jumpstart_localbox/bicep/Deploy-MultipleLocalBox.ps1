@@ -149,6 +149,7 @@ $ResolvedParams   = Resolve-Path -Path (Join-Path $ScriptRoot $ParameterFile)
 $tenant = "dcea112b-ec40-4856-b620-d8f34929a0e3"
 $sub    = "fbacedb7-2b65-412b-8b80-f8288b6d7b12"
 
+
 # Read current context (null if not logged in)
 $ctx = az account show --only-show-errors 2>$null | ConvertFrom-Json
 

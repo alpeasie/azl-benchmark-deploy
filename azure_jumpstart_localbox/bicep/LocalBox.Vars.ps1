@@ -1,4 +1,6 @@
 # Shared LocalBox variable/bootstrap helper
+# Azl Sub 1 ID: 'fbacedb7-2b65-412b-8b80-f8288b6d7b12'
+# Azl Sub 2 ID: '11bca099-3772-4ca6-9306-d0297f418192'
 
 param(
   [string]$ResourceGroup,

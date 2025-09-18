@@ -1,7 +1,3 @@
----
-title: Task 1 – Connect a server to Azure
----
-
 # Task 1: Connect a server to Azure
 
 ## Overview

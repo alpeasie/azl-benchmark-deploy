@@ -1,31 +1,17 @@
----
-title: Task 5 – Optimization & Cleanup
----
+# Task 5: Prepare an Azure Local VM image
 
-## Objective
-Optimize environment or remove resources to control cost.
+## Context
 
-## Steps
-1. Tag resources (if governance disabled initially):
-   ```powershell
-   az tag update --operation Merge --resource-id <resourceId> --tags CostCenter=Lab Owner=Me
-   ```
-2. Optional upgrade path:
-   ```powershell
-   # Trigger upgrade if not auto-run
-   pwsh ./artifacts/PowerShell/Update-AzLocalCluster.ps1
-   ```
-3. Cleanup (destructive):
-   ```powershell
-   az group delete -n <resourceGroup> --yes --no-wait
-   ```
-4. Verify deletion progress:
-   ```powershell
-   az group list -o table
-   ```
+You want to deploy Windows Server 2019 VMs on your cluster named _azlcluster3_.
 
-## Success Criteria
-- Unneeded resources deleted OR optimized.
-- Documentation updated with lessons learned (add to repo PRs).
+## Your goal
+
+Use the Azure portal to prepare this image on your cluster.
+
+## Details
+
+- Download the image from the Azure marketplace and store it locally on your cluster in a highly-available volume.
+
+**Stop when:** Image deployment runs for 30 seconds.
 
 Return: [Instructions](index.md)

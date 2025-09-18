@@ -1,28 +1,58 @@
 ---
-title: Task 1 – Environment & Prerequisites
+title: Task 1 – Connect a server to Azure
 ---
 
-## Objective
-Prepare your Azure subscription, local tooling, and baseline configuration for Azure Local benchmarking.
+# Task 1: Connect a server to Azure
 
-## Steps
-1. Verify Azure CLI login:
-   ```powershell
-   az account show --output table
-   ```
-2. Register required providers (run once per subscription):
-   ```powershell
-   foreach ($ns in 'Microsoft.AzureStackHCI','Microsoft.HybridCompute','Microsoft.HybridConnectivity','Microsoft.GuestConfiguration','Microsoft.ExtendedLocation','Microsoft.Kubernetes','Microsoft.KubernetesConfiguration') { az provider register -n $ns }
-   ```
-3. Confirm registration state:
-   ```powershell
-   az provider show -n Microsoft.AzureStackHCI --query registrationState -o tsv
-   ```
-4. Clone repo and inspect `bicep/` templates.
-5. Adjust `main.bicepparam` as needed (do not commit secrets).
+## Overview
 
-## Success Criteria
-- All providers show `Registered`.
-- You have a clean working local clone and updated param file.
+**Context:** You just purchased two servers from an OEM that you want to deploy as an Azure Local cluster. You racked the servers, cabled them, installed the OS. You also set up Azure tenant, subscription, and resource group. Now, you want to configure the servers and connect them to the cloud. To configure the servers, you will use an app called the Azure Local Configurator App. This app will be running on a laptop that has network connectivity to both servers.
+
+**Your goal:** Use the Configurator App to configure the server _AzLHOST1_ and connect it to Azure.
+
+## Details
+
+- Start the task via this url: **_enterurlhere_**. This will connect you to a desktop with the configurator app installed.
+- Run the configurator app **as an administrator.**
+- Onboard the server _AzLHOST1_ using the local admin account `administrator / azlTesting321!`
+
+### Network details
+
+**Join the server to your local network:**
+
+- **Available IP addresses:** 192.168.1.11 – 192.168.1.199 (Except for 192.168.1.20, which is reserved.)
+- **Subnet mask:** 255.255.255.0
+- **Gateway:** 192.168.1.1
+- **DNS:** 192.168.1.254
+- **NTP:** Pacific
+
+**Ensure the server network adapters follow this configuration:**
+
+| Server name | Adapter Name | IP Address      | VLAN |
+|-------------|--------------|-----------------|------|
+| AzLHOST1    | FABRIC       | 192.168.1.11    | 0    |
+| AzLHOST1    | StorageA     | Auto-assigned   | 711  |
+| AzLHOST1    | StorageB     | Auto-assigned   | 712  |
+| AzLHOST2    | FABRIC       | 192.168.1.12    | 0    |
+| AzLHOST2    | StorageA     | Auto-assigned   | 711  |
+| AzLHOST2    | StorageB     | Auto-assigned   | 712  |
+
+### Azure
+
+- **Network:** Connect to the Azure public cloud using the public internet. Don’t use any additional proxies. Don’t open any inbound ports.
+- **Tenant ID:** dcea112b-ec40-4856-b620-d8f34929a0e3
+- **Subscription ID:** 11bca099-3772-4ca6-9306-d0297f418192
+- **Resource group:** azlrg1
+- **Region:** East US
+- **Username:** user1@azlbenchmark.onmicrosoft.com
+- **Pass:** _auto-saved in browser_
+
+## End of task instructions
+
+- **Stop when:** You verify the server onboarded to Azure.
+- **Complete question 1 of this survey:** https://forms.office.com/r/4bBC2WZ5qG Leave the survey open in a tab.
+
+
+
 
 Next: [Task 2](task2.md)

@@ -2,7 +2,7 @@ title: Azure Local Benchmark Docs
 description: Guidance and task walkthroughs for this repository
 baseurl: ""
 url: ""
-theme: minima
+theme: just-the-docs
 markdown: kramdown
 highlighter: rouge
 

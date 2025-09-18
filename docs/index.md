@@ -3,27 +3,40 @@ title: Instructions
 permalink: /
 ---
 
-# Azure Local Benchmark – Instructions
 
-Welcome to the project documentation. Use the task pages in the navigation to walk through each exercise.
+# Study Instructions
 
-## Getting Started
-1. Clone the repo.
-2. Ensure required Azure resource providers are registered.
-3. Follow Task 1 to perform initial environment preparation.
+## Background
+
+Today, you’re going to evaluate the user interface for Azure Local and the Azure portal. You’ll complete tasks that a systems administrator would do when setting up an Azure Local system, such as:
+
+- Connecting a server node to the Azure cloud
+- Deploying a 2-node cluster
+- Creating a virtual machine on the cluster
+
+## How the session works
+
+- **Complete one task at a time.** Before you start, read the task out loud. If anything is unclear, I can help clarify.
+- **Keep the task instructions handy.** If you have the screen space, open them side by side your browser. You can reference them anytime.
+- **Work as you would on the job.** If the instructions do not specify a configuration (like what to name a VM), choose a name based on your professional opinion and the context provided in the task.
+- **Think aloud or work silently** as you complete tasks. Try to complete tasks in a timely manner.
+- **If you get stuck on a task,** you can search public documentation or use Copilot. If you feel completely blocked, let me know and we can move to the next one. I may also stop you early to stay on schedule.
+- **Let me know when you’ve completed a task.** You’ll complete a short survey after each task.
+
+
+
+Next: [Task 1](task1.md)
+
+
 
 ## Task Overview
 | Task | Summary |
 |------|---------|
-| [Task 1](task1.md) | Environment & prerequisites |
-| [Task 2](task2.md) | Deployment workflow |
-| [Task 3](task3.md) | Post-deploy configuration |
-| [Task 4](task4.md) | Validation & testing |
-| [Task 5](task5.md) | Optimization & cleanup |
-
-## Conventions
-- Commands are PowerShell unless stated otherwise.
-- Replace placeholder values in angle brackets `<like-this>`.
+| [Task 1](task1.md) | |
+| [Task 2](task2.md) | |
+| [Task 3](task3.md) | |
+| [Task 4](task4.md) | |
+| [Task 5](task5.md) | |
 
 ## Navigation
 Use the top nav (theme) or the table above to jump directly to a task.

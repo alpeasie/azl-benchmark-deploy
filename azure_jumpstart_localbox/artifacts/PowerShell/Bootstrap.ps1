@@ -114,7 +114,8 @@ Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
 Invoke-WebRequest https://aka.ms/wacdownload -OutFile "$($LocalBoxConfig.Paths["WACDir"])\WindowsAdminCenter.msi"
-Invoke-WebRequest https://aka.ms/ConfiguratorAppForHCI -OutFile "$($LocalBoxConfig.Paths["ConfiguratorDir"])\ConfiguratorApp.exe"
+Invoke-WebRequest https://configappstorage2008.file.core.windows.net/fs1/Configurator-App-for-Azure-Local-Setup-2508.0.3009.exe?sp=r&st=2025-09-15T22:30:49Z&se=2025-10-31T06:45:00Z&spr=https&sv=2024-11-04&sig=zavQ3jk2T9Et6RBt9rjXN5Om6J4ZPmkPoJNHj72o0dc%3D&sr=f -OutFile "$($LocalBoxConfig.Paths["ConfiguratorDir"])\ConfiguratorApp.exe"
+#Invoke-WebRequest https://aka.ms/ConfiguratorAppForHCI -OutFile "$($LocalBoxConfig.Paths["ConfiguratorDir"])\ConfiguratorApp.exe"
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/LocalBoxLogonScript.ps1") -OutFile $LocalBoxPath\LocalBoxLogonScript.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/New-LocalBoxCluster.ps1") -OutFile $LocalBoxPath\New-LocalBoxCluster.ps1
 Invoke-WebRequest ($templateBaseUrl + "artifacts/PowerShell/Configure-AKSWorkloadCluster.ps1") -OutFile $LocalBoxPath\Configure-AKSWorkloadCluster.ps1
@@ -363,8 +364,11 @@ if ($hv.InstallState -ne 'Installed') {
 }
 
 # Determine if a reboot is needed
-$rebootPending = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' -or
-                 ((Get-WindowsFeature -Name Hyper-V).InstallState -ne 'Installed')
+$needsCbsReboot   = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
+$needsWuReboot    = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired'
+$hypervNotInstalled = ((Get-WindowsFeature -Name Hyper-V).InstallState -ne 'Installed')
+
+$rebootPending = $needsCbsReboot -or $needsWuReboot -or $hypervNotInstalled
 
 Write-Header "Clean up Bootstrap.log."
 Stop-Transcript

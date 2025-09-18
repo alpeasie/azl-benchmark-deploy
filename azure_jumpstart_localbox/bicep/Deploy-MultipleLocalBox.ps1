@@ -106,8 +106,8 @@ param(
 
   # Post-deploy orchestration (applies only when exactly one scenario selected)
   [switch]$PostDeploy,                # Enable post actions (logical network + VM image)
-  [int]$InitialDelayMinutes = 150,     # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
-  [int]$MaxWaitMinutes = 480,         # Polling window
+  [int]$InitialDelayMinutes = 200,   # Delay before polling (set >0 only for long provisioning, e.g. scenario 3)
+  [int]$MaxWaitMinutes = 600,    # Polling window
   [int]$PollIntervalMinutes = 10,     # Poll cadence
   [switch]$SkipDeploy,                # Run only post steps (assumes deploy already done)
 

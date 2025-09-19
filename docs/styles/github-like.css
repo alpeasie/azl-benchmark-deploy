@@ -1,52 +1,60 @@
-/* Base layout width & typography similar to GitHub */
-.md-main__inner {
-  max-width: 100%;
+/* ---------- Layout & Typography ---------- */
+.md-main__inner { max-width: 100%; }
+.md-content { flex-grow: 1; }
+
+:root {
+  --header-h: 64px; /* adjust if header visually differs */
+  --md-text-font: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;
+  --md-code-font: ui-monospace,SFMono-Regular,"SF Mono",Menlo,Monaco,"Courier New",monospace;
 }
-.md-content {
-  flex-grow: 1;
-}
+
 .md-typeset {
   max-width: 860px;
   margin: 0 auto;
   line-height: 1.55;
   font-size: 16px;
   color: #24292f;
+  padding-bottom: 50px;
 }
 
-/* 1) Extra space at bottom of every page's content */
-.md-typeset {
-  padding-bottom: 50px !important;
+html, body, .md-main, .md-typeset, .md-typeset p, .md-typeset li {
+  font-family: var(--md-text-font);
+  font-variant-ligatures: none;
 }
 
-/* Headings */
-.md-typeset h1,
-.md-typeset h2,
-.md-typeset h3,
-.md-typeset h4 {
+/* ---------- Headings & Scroll Offset ---------- */
+.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4 {
   font-weight: 600;
   line-height: 1.25;
-  scroll-margin-top: 84px;
+  scroll-margin-top: var(--header-h);
 }
-.md-typeset h1 { font-size: 2rem; border-bottom: 1px solid #d0d7de; padding-bottom: .3rem; }
-.md-typeset h2 { font-size: 1.5rem; border-bottom: 1px solid #d0d7de; padding-bottom: .2rem; }
+.md-typeset h1 {
+  font-size: 1.9rem;
+  border-bottom: 1px solid #d0d7de;
+  margin: 0.6rem 0 10px;
+  padding-bottom: 6px;
+  line-height: 1.15;
+  color: #000;
+}
+.md-typeset h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid #d0d7de;
+  padding-bottom: .2rem;
+}
 .md-typeset h3 { font-size: 1.25rem; }
 
-/* Links */
-.md-typeset a {
-  color: #0969da;
-  text-decoration: underline;
-}
-.md-typeset a:hover {
-  text-decoration: underline;
-}
+/* ---------- Links ---------- */
+.md-typeset a { color: #0969da; text-decoration: underline; }
+.md-typeset a:hover { text-decoration: underline; }
 
-/* Inline code & code blocks */
+/* ---------- Code ---------- */
 .md-typeset code {
   background: #f6f8fa;
   border: 1px solid #d0d7de;
   padding: 2px 4px;
   border-radius: 6px;
   font-size: 85%;
+  font-family: var(--md-code-font);
 }
 .md-typeset pre > code {
   background: #f6f8fa;
@@ -57,41 +65,46 @@
   overflow-x: auto;
 }
 
-/* Tables */
+/* ---------- Tables (compact GitHub-like override) ---------- */
 .md-typeset table {
-  border-collapse: collapse;
-  border: 1px solid #e1e4e8;
   width: 100%;
-  font-size: 0.95rem;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 0.875rem;
+  border: .67px solid #d0d7de;
 }
-.md-typeset table th,
-.md-typeset table td {
-  padding: 6px 10px !important;                 /* tighter vertical space, force override */
-  border: 1px solid #e6ebef !important;
+
+/* Higher specificity chain to override theme defaults */
+.md-typeset table > thead > tr > th,
+.md-typeset table > tbody > tr > th,
+.md-typeset table > tbody > tr > td {
+  padding: 4px 8px !important;      /* enforce tighter padding */
+  line-height: 24px !important;     /* override inherited 1.55 */
+  border: .67px solid #d0d7de;
   vertical-align: middle;
+  font-weight: 400;
 }
-.md-typeset table thead th {
-  background: #ffffff !important;   /* white header like GitHub */
+
+.md-typeset table > thead > tr > th {
   font-weight: 600;
-  border-bottom: 2px solid #e6eef6 !important; /* subtle divider under header */
+  background: #fff;
+  border-bottom: .67px solid #d0d7de;
 }
 
-/* First row white, second row light grey stripe, alternating */
-.md-typeset table tbody tr:nth-child(odd) {
-  background: #ffffff !important;
-}
-.md-typeset table tbody tr:nth-child(even) {
-  background: #f6f8fa !important;  /* subtle grey band */
+.md-typeset table > tbody > tr:nth-child(even) {
+  background: #f6f8fa;
 }
 
-/* Remove any hover state entirely */
+/* Disable any table row hover background completely */
 .md-typeset table tbody tr:hover,
-.md-typeset table tbody tr:hover td,
-.md-typeset table tbody tr:hover th {
+.md-typeset table tbody tr:hover > th,
+.md-typeset table tbody tr:hover > td {
   background: inherit !important;
+  box-shadow: none !important;
 }
 
-/* Blockquotes */
+
+/* ---------- Blockquotes ---------- */
 .md-typeset blockquote {
   border-left: 4px solid #d0d7de;
   background: #f6f8fa;
@@ -99,7 +112,7 @@
   margin: 1em 0;
 }
 
-/* Admonitions (simplify) */
+/* ---------- Admonitions ---------- */
 .md-typeset .admonition,
 .md-typeset details {
   border: 1px solid #d0d7de;
@@ -109,200 +122,64 @@
   padding: 0.6em 0.9em;
 }
 .md-typeset .admonition-title,
-.md-typeset summary {
-  font-weight: 600;
+.md-typeset summary { font-weight: 600; }
+
+/* ---------- Header (single authoritative block) ---------- */
+.md-header {
+  box-shadow: none;
+  padding: 0 0.75rem;
+}
+.md-header__inner {
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  justify-content: flex-start;
+}
+.md-header__title, .md-logo {
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .md-header__title { font-size: 1rem; }
 }
 
-/* Remove Material shadowing */
-.md-header, .md-tabs { box-shadow: none; }
+/* ---------- Hide right-hand TOC only (no grid override) ---------- */
+.md-sidebar--secondary,
+.md-content__toc,
+.md-nav--secondary,
+.md-content__toc-wrapper { display: none !important; }
 
-/* Footer cleanup */
-.md-footer { display: none; }
-
-/* Spacing tweak */
-.md-typeset p, .md-typeset ul, .md-typeset ol {
-  margin-bottom: 0.9em;
+/* ---------- Optional: Accessible hide of original nav title instead of font-size:0 ---------- */
+/*
+.md-sidebar--primary .md-nav__title {
+  position: absolute;
+  width:1px; height:1px;
+  margin:-1px; padding:0;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
 }
+*/
 
-/* Horizontal rule */
+/* ---------- Misc spacing ---------- */
+.md-typeset p, .md-typeset ul, .md-typeset ol { margin-bottom: 0.75em; }
 .md-typeset hr {
   border: 0;
   border-top: 1px solid #d0d7de;
   margin: 2em 0;
 }
-
-/* Images scaling */
 .md-typeset img {
   max-width: 100%;
   border: 1px solid #d0d7de;
   border-radius: 4px;
 }
 
-/* Ensure Material does not override our font and use GitHub/system stack */
-:root {
-  --md-text-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  --md-code-font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, "Courier New", monospace;
-}
-
-/* High specificity + !important to override theme defaults */
-html, body, .md-main, .md-typeset, .md-typeset p, .md-typeset li {
-  font-family: var(--md-text-font) !important;
-  font-variant-ligatures: none !important;
-}
-
-/* Code font */
-.md-typeset code, pre, .md-typeset pre > code {
-  font-family: var(--md-code-font) !important;
-}
-
-/* ---------- Hide heading permalink icon (¶) ---------- */
+/* ---------- Hide heading permalinks ---------- */
 .md-typeset .headerlink,
 a.headerlink,
 .md-typeset .anchor,
 .md-header-anchor,
 .tocpermalink,
-.md-typeset .md-header-link {
-  display: none !important;
-}
+.md-typeset .md-header-link { display: none; }
 
-/* ---------- Tables: tighter, striped, no hover ---------- */
-.md-typeset table {
-  border-collapse: collapse;
-  border: 1px solid #e1e4e8;
-  width: 100%;
-  font-size: 0.95rem;
-}
-.md-typeset table th,
-.md-typeset table td {
-  padding: 6px 10px !important;                 /* tighter vertical space, force override */
-  border: 1px solid #e6ebef !important;
-  vertical-align: middle;
-}
-.md-typeset table thead th {
-  background: #ffffff !important;   /* white header like GitHub */
-  font-weight: 600;
-  border-bottom: 2px solid #e6eef6 !important; /* subtle divider under header */
-}
-
-/* First row white, second row light grey stripe, alternating */
-.md-typeset table tbody tr:nth-child(odd) {
-  background: #ffffff !important;
-}
-.md-typeset table tbody tr:nth-child(even) {
-  background: #f6f8fa !important;  /* subtle grey band */
-}
-
-/* Remove any hover state entirely */
-.md-typeset table tbody tr:hover,
-.md-typeset table tbody tr:hover td,
-.md-typeset table tbody tr:hover th {
-  background: inherit !important;
-}
-
-/* ---------- Reduce spacing between page title and first section ---------- */
-.md-typeset h1 {
-  margin-top: 0.6rem !important;
-  margin-bottom: 10px !important;        /* about 10px gap below title */
-  padding-bottom: 6px !important;
-  font-size: 1.9rem !important;
-  font-weight: 600 !important;
-  line-height: 1.15 !important;
-  color: #000
-}
-
-/* (Removed earlier block that pushed header right based on sidebar width) */
-
-/* Remove header search box / controls */
-.md-header .md-search,
-.md-header-nav .md-search,
-.md-search,
-.md-header .md-search__input,
-.md-header .md-search__button,
-.md-header .md-search input,
-.md-header .md-search-field {
-  display: none !important;
-  visibility: hidden !important;
-  width: 0 !important;
-  height: 0 !important;
-  opacity: 0 !important;
-}
-
-/* Left-align logo / site title in the top header (flush left) */
-.md-header {
-  padding-left: 0.6rem !important;
-  padding-right: 0.6rem !important;
-  justify-content: flex-start !important;
-}
-.md-header .md-header__inner,
-.md-header .md-header-nav {
-  display: flex;
-  align-items: center;
-}
-.md-header .md-logo,
-.md-header .md-header__title {
-  margin-left: 0 !important;
-  margin-right: 0.5rem !important;
-}
-
-/* Ensure the header title stays visible and not overlapped on very narrow screens */
-@media (max-width: 640px) {
-  .md-header { padding-left: 0.5rem !important; }
-  .md-header .md-header__title { font-size: 1rem !important; }
-}
-
-/* Slightly tighten paragraph spacing globally (optional) */
-.md-typeset p, .md-typeset ul, .md-typeset ol {
-  margin-bottom: 0.75em !important;
-}
-
-/* Ensure table headers and cells look crisp and compact on small screens */
-@media (max-width: 768px) {
-  .md-typeset table th,
-  .md-typeset table td {
-    padding: 3px 6px;
-  }
-}
-
-/* Hide right-hand Table of Contents and remove its reserved column */
-.md-sidebar--secondary,
-.md-content__toc,
-.md-nav--secondary,
-.md-typeset .toc,
-.md-content__toc-wrapper {
-  display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  width: 0 !important;
-}
-
-/* Remove the third grid column (right sidebar) so main content can expand */
-.md-main {
-  grid-template-columns: var(--md-sidebar-width, 260px) 1fr !important;
-}
-
-/* Ensure no unintended spacing above first nav item after replacement */
-/*.md-sidebar--primary .md-nav__list { margin-top: 2px !important; }*/
-
-/* --- Material v9 primary nav title (.md-nav__title) replacement --- */
-/* Hide original visible text (keep aria-label for accessibility) and inject new label */
-/* Sidebar section label: match nav link style but slightly heavier */
-.md-sidebar--primary .md-nav__title,
-.md-nav--primary .md-nav__title {
-  font-size: 0 !important;          /* hide original text visually (keep for a11y) */
-}
-.md-sidebar--primary .md-nav__title::after,
-.md-nav--primary .md-nav__title::after {
-  font-size: 16px !important;    /* align with nav item font size */
-  content: "Table of contents";
-}
-
-/* Keep header content permanently left-aligned */
-.md-header { padding-left: 0.65rem !important; }
-.md-header .md-header__inner { max-width: none !important; margin: 0 !important; }
-.md-header .md-logo, .md-header .md-header__title { margin-left: 0 !important; }
-
-/* Slight tweak on very small screens */
-@media (max-width: 720px) {
-  .md-sidebar--primary .md-nav__title::after,
-  .md-nav--primary .md-nav__title::after { font-size: .95rem !important; }
-}
+/* ---------- Footer ---------- */
+.md-footer { display: none; }

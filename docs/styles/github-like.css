@@ -281,28 +281,19 @@ a.headerlink,
 }
 
 /* Ensure no unintended spacing above first nav item after replacement */
-.md-sidebar--primary .md-nav__list { margin-top: 2px !important; }
+/*.md-sidebar--primary .md-nav__list { margin-top: 2px !important; }*/
 
 /* --- Material v9 primary nav title (.md-nav__title) replacement --- */
 /* Hide original visible text (keep aria-label for accessibility) and inject new label */
 /* Sidebar section label: match nav link style but slightly heavier */
 .md-sidebar--primary .md-nav__title,
 .md-nav--primary .md-nav__title {
-  position: relative;
   font-size: 0 !important;          /* hide original text visually (keep for a11y) */
-  line-height: 1.35 !important;
-  padding: 4px 0 2px 0 !important;
-  margin: 0 0 0.35rem 0 !important;
 }
 .md-sidebar--primary .md-nav__title::after,
 .md-nav--primary .md-nav__title::after {
+  font-size: 16px !important;    /* align with nav item font size */
   content: "Table of contents";
-  font-size: 0.95rem !important;    /* align with nav item font size */
-  font-weight: 600 !important;      /* slightly heavier than regular items */
-  display: block;
-  color: inherit;
-  letter-spacing: 0;
-  margin: 0;
 }
 
 /* Keep header content permanently left-aligned */

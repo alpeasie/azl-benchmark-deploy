@@ -5,18 +5,36 @@
 
 **Context:** You connected two server nodes to the Azure cloud. Now, you want to deploy a 2-node Azure Local cluster.
 
-**Your goal:** Use the Azure portal to deploy an Azure Local cluster with the servers _azlnode1_ and _azlnode2_ in the resource group _azlrg2_.
+**Your goal:** Use the Azure portal to deploy an Azure Local cluster using the servers `AzLHOST1` and `AzLHOST2` in the resource group `azlrg2`.
 
 **Stop when:** Azure Local cluster deployment starts.
 
 ## Detailed instructions
 
-Use the following details to help you create the cluster. If the task does not explicitly state what to type or select in an input field, use your best judgement to determine how to proceed.
+Use the following details to help you create the cluster. If the instructions do not specify a configuration (like what to name the cluster), choose a name based on your professional opinion and the context provided in the task.
 
 ### Azure configuration
 
-- **Resource group:** Create the cluster in the same RG of the servers, _azlrg2_
+- **Resource group:** Create the cluster in the same RG of the servers, `azlrg2`
 - **Region:** East US
+
+## Network details 
+
+### Intended Network Adapter Configuration 
+
+| Server name | Adapter Name | IP Address      | VLAN |
+|-------------|--------------|-----------------|------|
+| AzLHOST1    | FABRIC       | 192.168.1.11    | 0    |
+| AzLHOST1    | StorageA     | Auto-assigned   | 711  |
+| AzLHOST1    | StorageB     | Auto-assigned   | 712  |
+| AzLHOST2    | FABRIC       | 192.168.1.12    | 0    |
+| AzLHOST2    | StorageA     | Auto-assigned   | 711  |
+| AzLHOST2    | StorageB     | Auto-assigned   | 712  |
+
+
+### How the cluster is cabeled 
+
+
 
 ### Cluster network configuration
 

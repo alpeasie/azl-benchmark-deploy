@@ -1,3 +1,18 @@
 *.bicepparam
 # Ignore PowerShell secrets file used for tenant/subscription IDs
 /azure_jumpstart_localbox/bicep/LocalBoxSecrets.psd1
+
+# Virtual environments
+.venv/
+venv/
+
+# Bytecode / caches
+__pycache__/
+*.py[cod]
+
+# Test / coverage output
+.pytest_cache/
+.coverage
+
+# Local env files
+.env

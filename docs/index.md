@@ -25,4 +25,9 @@ Today, you’re going to evaluate the user interface for Azure Local and the Azu
 
 
 
-Next: [Task 1](task1.md)
+## Task 0 
+- **Log into Azure portal.** Open a new private browser window. Log into azure using the temporary account credentails that were sent to you. Dismiss any Azure popups that come up. 
+
+
+## After you're logged in
+You can start: [Task 1](task1.md)

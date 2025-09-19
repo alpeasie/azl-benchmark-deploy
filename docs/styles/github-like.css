@@ -13,6 +13,11 @@
   color: #24292f;
 }
 
+/* 1) Extra space at bottom of every page's content */
+.md-typeset {
+  padding-bottom: 50px !important;
+}
+
 /* Headings */
 .md-typeset h1,
 .md-typeset h2,
@@ -29,7 +34,7 @@
 /* Links */
 .md-typeset a {
   color: #0969da;
-  text-decoration: none;
+  text-decoration: underline;
 }
 .md-typeset a:hover {
   text-decoration: underline;
@@ -55,17 +60,35 @@
 /* Tables */
 .md-typeset table {
   border-collapse: collapse;
+  border: 1px solid #e1e4e8;
   width: 100%;
   font-size: 0.95rem;
 }
 .md-typeset table th,
 .md-typeset table td {
-  border: 1px solid #d0d7de;
-  padding: 6px 10px;
+  padding: 6px 10px !important;                 /* tighter vertical space, force override */
+  border: 1px solid #e6ebef !important;
+  vertical-align: middle;
 }
 .md-typeset table thead th {
-  background: #f6f8fa;
+  background: #ffffff !important;   /* white header like GitHub */
   font-weight: 600;
+  border-bottom: 2px solid #e6eef6 !important; /* subtle divider under header */
+}
+
+/* First row white, second row light grey stripe, alternating */
+.md-typeset table tbody tr:nth-child(odd) {
+  background: #ffffff !important;
+}
+.md-typeset table tbody tr:nth-child(even) {
+  background: #f6f8fa !important;  /* subtle grey band */
+}
+
+/* Remove any hover state entirely */
+.md-typeset table tbody tr:hover,
+.md-typeset table tbody tr:hover td,
+.md-typeset table tbody tr:hover th {
+  background: inherit !important;
 }
 
 /* Blockquotes */
@@ -130,4 +153,165 @@ html, body, .md-main, .md-typeset, .md-typeset p, .md-typeset li {
 /* Code font */
 .md-typeset code, pre, .md-typeset pre > code {
   font-family: var(--md-code-font) !important;
+}
+
+/* ---------- Hide heading permalink icon (¶) ---------- */
+.md-typeset .headerlink,
+a.headerlink,
+.md-typeset .anchor,
+.md-header-anchor,
+.tocpermalink,
+.md-typeset .md-header-link {
+  display: none !important;
+}
+
+/* ---------- Tables: tighter, striped, no hover ---------- */
+.md-typeset table {
+  border-collapse: collapse;
+  border: 1px solid #e1e4e8;
+  width: 100%;
+  font-size: 0.95rem;
+}
+.md-typeset table th,
+.md-typeset table td {
+  padding: 6px 10px !important;                 /* tighter vertical space, force override */
+  border: 1px solid #e6ebef !important;
+  vertical-align: middle;
+}
+.md-typeset table thead th {
+  background: #ffffff !important;   /* white header like GitHub */
+  font-weight: 600;
+  border-bottom: 2px solid #e6eef6 !important; /* subtle divider under header */
+}
+
+/* First row white, second row light grey stripe, alternating */
+.md-typeset table tbody tr:nth-child(odd) {
+  background: #ffffff !important;
+}
+.md-typeset table tbody tr:nth-child(even) {
+  background: #f6f8fa !important;  /* subtle grey band */
+}
+
+/* Remove any hover state entirely */
+.md-typeset table tbody tr:hover,
+.md-typeset table tbody tr:hover td,
+.md-typeset table tbody tr:hover th {
+  background: inherit !important;
+}
+
+/* ---------- Reduce spacing between page title and first section ---------- */
+.md-typeset h1 {
+  margin-top: 0.6rem !important;
+  margin-bottom: 10px !important;        /* about 10px gap below title */
+  padding-bottom: 6px !important;
+  font-size: 1.9rem !important;
+  font-weight: 600 !important;
+  line-height: 1.15 !important;
+  color: #000
+}
+
+/* (Removed earlier block that pushed header right based on sidebar width) */
+
+/* Remove header search box / controls */
+.md-header .md-search,
+.md-header-nav .md-search,
+.md-search,
+.md-header .md-search__input,
+.md-header .md-search__button,
+.md-header .md-search input,
+.md-header .md-search-field {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Left-align logo / site title in the top header (flush left) */
+.md-header {
+  padding-left: 0.6rem !important;
+  padding-right: 0.6rem !important;
+  justify-content: flex-start !important;
+}
+.md-header .md-header__inner,
+.md-header .md-header-nav {
+  display: flex;
+  align-items: center;
+}
+.md-header .md-logo,
+.md-header .md-header__title {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Ensure the header title stays visible and not overlapped on very narrow screens */
+@media (max-width: 640px) {
+  .md-header { padding-left: 0.5rem !important; }
+  .md-header .md-header__title { font-size: 1rem !important; }
+}
+
+/* Slightly tighten paragraph spacing globally (optional) */
+.md-typeset p, .md-typeset ul, .md-typeset ol {
+  margin-bottom: 0.75em !important;
+}
+
+/* Ensure table headers and cells look crisp and compact on small screens */
+@media (max-width: 768px) {
+  .md-typeset table th,
+  .md-typeset table td {
+    padding: 3px 6px;
+  }
+}
+
+/* Hide right-hand Table of Contents and remove its reserved column */
+.md-sidebar--secondary,
+.md-content__toc,
+.md-nav--secondary,
+.md-typeset .toc,
+.md-content__toc-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+/* Remove the third grid column (right sidebar) so main content can expand */
+.md-main {
+  grid-template-columns: var(--md-sidebar-width, 260px) 1fr !important;
+}
+
+/* Ensure no unintended spacing above first nav item after replacement */
+.md-sidebar--primary .md-nav__list { margin-top: 2px !important; }
+
+/* --- Material v9 primary nav title (.md-nav__title) replacement --- */
+/* Hide original visible text (keep aria-label for accessibility) and inject new label */
+/* Sidebar section label: match nav link style but slightly heavier */
+.md-sidebar--primary .md-nav__title,
+.md-nav--primary .md-nav__title {
+  position: relative;
+  font-size: 0 !important;          /* hide original text visually (keep for a11y) */
+  line-height: 1.35 !important;
+  padding: 4px 0 2px 0 !important;
+  margin: 0 0 0.35rem 0 !important;
+}
+.md-sidebar--primary .md-nav__title::after,
+.md-nav--primary .md-nav__title::after {
+  content: "Table of contents";
+  font-size: 0.95rem !important;    /* align with nav item font size */
+  font-weight: 600 !important;      /* slightly heavier than regular items */
+  display: block;
+  color: inherit;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* Keep header content permanently left-aligned */
+.md-header { padding-left: 0.65rem !important; }
+.md-header .md-header__inner { max-width: none !important; margin: 0 !important; }
+.md-header .md-logo, .md-header .md-header__title { margin-left: 0 !important; }
+
+/* Slight tweak on very small screens */
+@media (max-width: 720px) {
+  .md-sidebar--primary .md-nav__title::after,
+  .md-nav--primary .md-nav__title::after { font-size: .95rem !important; }
 }

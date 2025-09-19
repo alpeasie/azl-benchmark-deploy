@@ -24,8 +24,6 @@ nav:
   - Task 5: task5.md
 
 markdown_extensions:
-  - toc:
-      permalink: true
   - admonition
   - codehilite
   - tables

@@ -1,16 +1,22 @@
-site_name: LocalBox Instructions
-site_url: /
-docs_dir: docs
+site_name: AzBenchmark Instructions
+site_url: http://127.0.0.1:8000
+docs_dir: ../docs
 
 theme:
   name: material
   language: en
   features:
-    - navigation.instant
     - navigation.sections
+    - navigation.footer
+  font:
+    text: false
+    code: false
+
+extra_css:
+  - styles/github-like.css
 
 nav:
-  - Home: index.md
+  - Instructions: index.md
   - Task 1: task1.md
   - Task 2: task2.md
   - Task 3: task3.md

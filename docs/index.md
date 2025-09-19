@@ -26,17 +26,3 @@ Today, you’re going to evaluate the user interface for Azure Local and the Azu
 
 
 Next: [Task 1](task1.md)
-
-
-
-## Task Overview
-| Task | Summary |
-|------|---------|
-| [Task 1](task1.md) | |
-| [Task 2](task2.md) | |
-| [Task 3](task3.md) | |
-| [Task 4](task4.md) | |
-| [Task 5](task5.md) | |
-
-## Navigation
-Use the top nav (theme) or the table above to jump directly to a task.

@@ -8,9 +8,12 @@
 
 ## Detailed Instructions
 
-- Start the task via this url: **_enterurlhere_**. This will connect you to a desktop with the configurator app installed.
-- Run the configurator app **as an administrator.**
-- Onboard the server _AzLHOST1_ using the local admin account `administrator / azlTesting321!`
+- **Log into a remote desktop** that has the configurator app installed:[link](https://portal.azure.com/#@azlbenchmark.onmicrosoft.com/resource/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg1/providers/Microsoft.Compute/virtualMachines/LocalBox-Client/bastionHost). 
+- **Username**: arcdemo
+- **Pass**: azlTesting321
+
+- **Once the desktop loads:** Run the configurator app **as an administrator.**
+- Onboard the server `AzLHOST1_` using the local admin account `administrator / azlTesting321!`
 
 ### Network
 

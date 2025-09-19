@@ -57,4 +57,12 @@ Each server has 3 network adapters:
 - Create multiple cluster shared volumes for workloads
 
 
-Next: [Task 3](task3.md)
+## End of task instructions
+
+- **Stop when:** Azure Local cluster deployment starts. Let me know when you think you're done. 
+
+## Next steps 
+
+- Reopen the browser tab with the survey and complete question 2. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+- Brief discussion.
+- I'll tell you when to start [Task 3](task3.md)

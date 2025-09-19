@@ -30,4 +30,12 @@ Use the Azure portal to deploy a Windows Server 2025 VM on the cluster _azlclust
 
 
 
-Next: [Task 4](task4.md)
+## End of task instructions
+
+- **Stop when:** VM deployment runs for ~30 seconds.
+
+## Next steps 
+
+- Reopen the browser tab with the survey and complete question 3. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+- Brief discussion.
+- I'll tell you when to start [Task 4](task4.md)

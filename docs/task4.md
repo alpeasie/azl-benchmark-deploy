@@ -15,4 +15,14 @@ Configure your cluster, _azlcluster3_, so that you can deploy workloads in the f
 - Your router is already configured with a Layer-3 Virtual Switch interface with this new subnet with the address `192.168.10.1`.
 
 
-Next: [Task 5](task5.md)
+
+
+## End of task instructions
+
+- **Stop when:** You confirm the network is setup. 
+
+## Next steps 
+
+- Complete survey quesiton 4. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+- Brief discussion.
+- I'll tell you when to start [Task 5](task5.md)

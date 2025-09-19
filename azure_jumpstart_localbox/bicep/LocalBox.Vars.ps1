@@ -1,14 +1,19 @@
 # Shared LocalBox variable/bootstrap helper
-# Azl Sub 1 ID: 'fbacedb7-2b65-412b-8b80-f8288b6d7b12'
-# Azl Sub 2 ID: '11bca099-3772-4ca6-9306-d0297f418192'
+
 
 param(
   [string]$ResourceGroup,
   [string]$ClusterName,
-  [string]$TenantId = 'dcea112b-ec40-4856-b620-d8f34929a0e3',
-  [string]$SubscriptionId = 'fbacedb7-2b65-412b-8b80-f8288b6d7b12',
+  [string]$TenantId,
+  [string]$SubscriptionId,
   [switch]$EnsureLogin
 )
+
+# Central secrets loader
+. "$PSScriptRoot\LocalBox.Secrets.ps1"
+if (-not $TenantId) { $TenantId = $LocalBoxSecrets.TenantId }
+if (-not $SubscriptionId) { $SubscriptionId = $LocalBoxSecrets.SubscriptionId }
+if (-not $TenantId -or -not $SubscriptionId) { throw "TenantId and SubscriptionId must be provided in LocalBoxSecrets.psd1 or passed as parameters." }
 
 # Defaults (scenario 3 defaults remain azlrg3 / azlcluster3; overrides via env or params)
 if (-not $ResourceGroup) { $ResourceGroup = $env:LOCALBOX_RG  ; if (-not $ResourceGroup) { $ResourceGroup = 'azlrg3' } }

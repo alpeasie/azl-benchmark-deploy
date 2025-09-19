@@ -4,18 +4,6 @@
 Purpose: Deploy one or more LocalBox scenarios (1,2,3, or all) with different
          resource group names, cluster names, and deployment modes, then optionally delete them.
 
-Scenarios mapping:
-
-cd azure_jumpstart_localbox/bicep
-resourceGroupName="azlrg2"
-location="eastus" 
-az login --tenant dcea112b-ec40-4856-b620-d8f34929a0e3 
-az group create --name resourceGroupName --location location
-az deployment group create -g resourceGroupName -f "main.bicep" -p "main.bicepparam"
-
-
-
-
 .SCENARIOS
   Scenario 1: RG=azlrg1  Cluster=azlcluster1  Mode=none
   Scenario 2: RG=azlrg2  Cluster=azlcluster2  Mode=validate
@@ -43,15 +31,6 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   Bicep parameters clusterName + clusterDeploymentMode are passed directly on the az deployment command.
   Post actions call: Create-LogicalNetwork.ps1 and Create-VMImage.ps1 (which themselves use LocalBox.Vars.ps1 / $LocalBoxContext).
 
-.POST DEPLOY (SCENARIO 3)
-  Auto-enabled for a single scenario 3 run unless you explicitly disable via: -PostDeploy:$false
-  Includes:
-    1. Optional initial delay (provisioning buffer for large cluster deploy)
-    2. Poll readiness (looks for storage path prefix UserStorage2-)
-    3. Runs logical network + VM image scripts
-  Disable: -PostDeploy:$false
-  Run later only: -Scenario 3 -SkipDeploy -PostDeploy (plus overrides if used originally)
-
 .OVERRIDES EXAMPLES
   Scenario 3, one-off new names with auto post deploy:
     pwsh ./Deploy-MultipleLocalBox.ps1 -Scenario 3 -ResourceGroupOverride azlrg6 -ClusterNameOverride azlcluster6
@@ -65,16 +44,7 @@ az deployment group create -g resourceGroupName -f "main.bicep" -p "main.biceppa
   -RemoveLocks helps if RG has delete/update locks.
   -WaitForDeletion blocks until deletion completes; else delete is async.
 
-.RETRY / RERUN SAFE PRACTICES
-  - If post actions partially succeeded, you can rerun with -Scenario 3 -SkipDeploy -PostDeploy.
-  - If image or logical network already exists, scripts may currently error; add existence checks if you need idempotent skips.
-
-.EXTENSIONS (OPTIONAL IDEAS)
-  Add a -ForcePost to recreate post resources.
-  Add existence checks to skip already-created logical network or image.
-  Add a delete-only script if teardown patterns become more complex.
-
-.EXAMPLES QUICK COPY
+  .EXAMPLES QUICK COPY
   # Default all:
   pwsh ./Deploy-MultipleLocalBox.ps1
   # Scenario 3 (auto post actions):
@@ -118,6 +88,8 @@ param(
   [switch]$RemoveLocks                # Remove locks before deletion
 )
 
+# Secrets: loaded via LocalBox.Secrets.ps1 (gitignored LocalBoxSecrets.psd1 in this folder)
+
 $ErrorActionPreference = 'Stop'
 
 function Write-Stage {
@@ -145,25 +117,20 @@ $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ResolvedTemplate = Resolve-Path -Path (Join-Path $ScriptRoot $TemplateFile)
 $ResolvedParams   = Resolve-Path -Path (Join-Path $ScriptRoot $ParameterFile)
 
-# Test if user is logged into Azure
-$tenant = "dcea112b-ec40-4856-b620-d8f34929a0e3"
-$sub    = "fbacedb7-2b65-412b-8b80-f8288b6d7b12"
+# Secrets / Azure context bootstrap
+. (Join-Path $PSScriptRoot 'LocalBox.Secrets.ps1')
+$tenant = $LocalBoxSecrets.TenantId
+$sub    = $LocalBoxSecrets.SubscriptionId
+if (-not $tenant -or -not $sub) { throw "TenantId and SubscriptionId must be set in LocalBoxSecrets.psd1" }
 
-
-# Read current context (null if not logged in)
+# (Optional) login alignment (kept as-is)
 $ctx = az account show --only-show-errors 2>$null | ConvertFrom-Json
-
-# If not logged in, wrong tenant, or wrong subscription => log in & set it
 if (-not $ctx -or $ctx.tenantId -ne $tenant -or $ctx.id -ne $sub) {
   az login --tenant $tenant --only-show-errors | Out-Null
   az account set --subscription $sub | Out-Null
   $ctx = az account show --only-show-errors | ConvertFrom-Json
 }
-
-# Final check / message
-if ($ctx.tenantId -eq $tenant -and $ctx.id -eq $sub) {
-  Write-Host "Azure context OK. Tenant=$tenant  Subscription=$sub"
-} else {
+if ($ctx.tenantId -ne $tenant -or $ctx.id -ne $sub) {
   throw "Azure context NOT set. Current tenant=$($ctx.tenantId) subscription=$($ctx.id)"
 }
 
@@ -328,3 +295,7 @@ if ($Cleanup -and -not $WaitForDeletion) {
 }
 
 Write-Host 'Done.' -ForegroundColor Cyan
+
+. (Join-Path $ScriptRoot 'LocalBox.Vars.ps1') -EnsureLogin
+$tenant = $TenantId
+$sub    = $SubscriptionId

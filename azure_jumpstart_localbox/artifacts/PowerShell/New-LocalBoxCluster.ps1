@@ -7,8 +7,15 @@ $Global:LocalBoxConfig = Import-PowerShellDataFile -Path $Env:LocalBoxConfigFile
 #region Main
 $HostVMPath = $LocalBoxConfig.HostVMPath
 $InternalSwitch = $LocalBoxConfig.InternalSwitch
-$tenantId = $env:tenantId
-$subscriptionId = $env:subscriptionId
+
+# Central secrets helper in bicep folder
+$secretsScript = Join-Path $PSScriptRoot '..\..\bicep\LocalBox.Secrets.ps1'
+if (-not (Test-Path $secretsScript)) { throw "Secrets helper not found: $secretsScript" }
+. $secretsScript
+$tenantId = $LocalBoxSecrets.TenantId
+$subscriptionId = $LocalBoxSecrets.SubscriptionId
+if (-not $tenantId -or -not $subscriptionId) { throw "TenantId and SubscriptionId must be set in LocalBoxSecrets.psd1" }
+
 $azureLocation = $env:azureLocation
 $resourceGroup = $env:resourceGroup
 

@@ -1,1 +1,3 @@
 *.bicepparam
+# Ignore PowerShell secrets file used for tenant/subscription IDs
+/azure_jumpstart_localbox/bicep/LocalBoxSecrets.psd1

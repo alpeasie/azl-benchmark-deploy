@@ -34,7 +34,8 @@
 - **Stop when:** VM deployment runs for ~30 seconds.
 
 ## Next steps 
+1. (Optional): Open the progress animation [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&t=68CvmXlAwhUrDkvy-1) in a new tab. Pass: `azlTesting321!`
 
-- Reopen the browser tab with the survey and complete question 3. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
-- Brief discussion.
-- I'll tell you when to start [Task 4](task4.md)
+2. Reopen the browser tab with the survey and complete question 3. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+
+3. I'll tell you when to start [Task 4](task4.md)

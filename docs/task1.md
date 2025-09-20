@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Context:** You just purchased two servers from an OEM that you want to deploy as an Azure Local cluster. You racked the servers, cabled them, installed the OS. You also set up Azure tenant, subscription, and resource group. Now, you want to configure the servers and connect them to the cloud. To configure the servers, you will use an app called the Azure Local Configurator App. This app will be running on a laptop that has network connectivity to both servers.
+**Context:** You just purchased two servers from an OEM that you want to deploy as an Azure Local cluster. You racked the servers, cabled them, installed the OS. You also set up an Azure tenant, subscription, and resource group. Now, you want to configure the servers and connect them to the cloud. To configure the servers, you will use an app called the Azure Local Configurator App. This app will be running on a laptop that has network connectivity to both servers.
 
 **Your goal:** Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
 
@@ -10,21 +10,20 @@
 
 ### Remote Desktop
 
-- Log into a remote desktop that has the configurator app installed. Open the [remote desktop link](https://portal.azure.com/#@azlbenchmark.onmicrosoft.com/resource/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg1/providers/Microsoft.Compute/virtualMachines/LocalBox-Client/bastionHost) in a new tab. 
-- Username: arcdemo
-- Pass: azlTesting321
-- Press the connect button.
+- Log in to a remote desktop that has the configurator app installed. Open the [remote desktop link](https://portal.azure.com/#@azlbenchmark.onmicrosoft.com/resource/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg1/providers/Microsoft.Compute/virtualMachines/LocalBox-Client/bastionHost) in a new tab. 
+- **Username**: arcdemo
+- **Pass**: azlTesting321!
 
 
-### Once the desktop loads ### 
+### Once the desktop loads
 
 1. Run the configurator app **as an administrator.**
-2. Onboard the server `AzLHOST1` using it's local admin account `administrator / azlTesting321!`
+2. Onboard the server `AzLHOST1` to Azure using the local admin account `administrator / azlTesting321!`
 
 
 ### Network
 
-**1. Ensure the server's network adapters follow this configuration.** (This is also the intended configuration for the 2-node cluster):
+**1. Ensure the server's network adapters match this configuration.** (This is also the intended configuration for the 2-node cluster):
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|
@@ -53,7 +52,7 @@
 - **Subscription ID:** 11bca099-3772-4ca6-9306-d0297f418192
 - **Resource group:** azlrg1
 - **Region:** East US
-- **Username:** user1@azlbenchmark.onmicrosoft.com
+- **Azure username:** user1@azlbenchmark.onmicrosoft.com
 - **Pass:** _Temporary pass that was sent to you_
 
 ## End of task instructions
@@ -63,5 +62,5 @@
 ## Next steps 
 
 - Open this [survey](https://forms.office.com/r/4bBC2WZ5qG) in a new tab and complete question 1. Leave the survey tab open. 
-- Brief discussion.
+- Brief discussion about the UX.
 - I'll tell you when to start [Task 2](task2.md)

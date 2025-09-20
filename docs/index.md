@@ -16,7 +16,7 @@ Today, you’re going to evaluate the user interface for Azure Local and the Azu
 
 ## How the session works
 
-- **Complete one task at a time.** Before you start, read the task out loud. If anything is unclear, I can help clarify.
+- **Complete one task at a time.** Before you start, read the task **out loud**. If anything is unclear, I can help clarify.
 - **Keep the task instructions handy.** If you have the screen space, open them side by side your browser. You can reference them anytime.
 - **Work as you would on the job.** If the instructions do not specify a configuration (like what to name a VM), choose a name based on your professional opinion and the context provided in the task.
 - **Think aloud or work silently** as you complete tasks. Try to complete tasks in a timely manner.

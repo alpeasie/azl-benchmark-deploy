@@ -64,10 +64,8 @@ Each server has 3 network adapters:
 
 - Join the cluster to the domain: `jumpstart.local/hcioudocs`
 - OU formatting: `OU=hcioudocs,DC=jumpstart,DC=local`
-- Domain username: `localboxdeployuser`
-- Pass: `azlTesting321!`
-- Local username: `administrator`
-- Pass: `azlTesting321!`
+- Domain creds: `localboxdeployuser/azlTesting321!`
+- Local admin creds: `administrator/azlTesting321!`
 
 ### Cluster features
 
@@ -80,7 +78,8 @@ Each server has 3 network adapters:
 - **Stop when:** Azure Local cluster deployment starts. Let me know when you think you're done. 
 
 ## Next steps 
+1. (Optional): Open the progress animation [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=104-35&t=68CvmXlAwhUrDkvy-1) in a new tab. Pass: `azlTesting321!`
 
-- Reopen the browser tab with the survey and complete question 2. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
-- Brief discussion.
-- I'll tell you when to start [Task 3](task3.md)
+2. Reopen the browser tab with the survey and complete question 2. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+
+3. I'll tell you when to start [Task 3](task3.md)

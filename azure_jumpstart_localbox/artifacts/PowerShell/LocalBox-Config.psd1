@@ -71,6 +71,7 @@
     InternalSwitch                       = "InternalSwitch"                      # Name of internal switch that the LocalBox VMs will use in Single Host mode.
     FabricSwitch                         = "vSwitch-Fabric"
     FabricNIC                            = "FABRIC"
+    FabricNIC2                           = "FABRIC2"
     ClusterVSwitchName                   = "hciSwitch"
     # Cluster name placeholder (replaced during Bootstrap by -clusterName parameter)
     ClusterName                          = "%staging-clustername%"

@@ -308,7 +308,7 @@ resource vmAutoShutdown 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     taskType: 'ComputeVmShutdownTask'
     dailyRecurrence: {
       // 24h format HHmm -> 1900 = 7:00 PM
-      time: '1900'
+      time: '2200'
     }
     timeZoneId: 'Pacific Standard Time' // Adjusts for DST automatically (PST/PDT)
     targetResourceId: vm.id

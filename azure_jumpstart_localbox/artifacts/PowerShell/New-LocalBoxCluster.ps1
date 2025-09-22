@@ -365,39 +365,6 @@ switch ($env:clusterDeploymentMode) {
     }
 }
 
-# Add second network adapter to each node VM (if not already present)
-if ($LocalBoxConfig.ContainsKey('FabricNIC2')) {
-    foreach ($vm in $LocalBoxConfig.NodeHostConfig) {
-        $vmName = $vm.Hostname
-        $existing = Get-VMNetworkAdapter -VMName $vmName -ErrorAction SilentlyContinue |
-                    Where-Object { $_.SwitchName -eq $InternalSwitch }
-        if (-not ($existing | Where-Object { $_.Name -eq $LocalBoxConfig.FabricNIC2 })) {
-            Write-Host "Adding secondary fabric NIC '$($LocalBoxConfig.FabricNIC2)' to $vmName ..."
-            Add-VMNetworkAdapter -VMName $vmName -SwitchName $InternalSwitch -Name $LocalBoxConfig.FabricNIC2
-        } else {
-            Write-Host "Secondary fabric NIC already present on $vmName (skipping)."
-        }
-    }
-}
-
-# Rename second NIC inside each node VM (if needed)
-if ($LocalBoxConfig.ContainsKey('FabricNIC2')) {
-    foreach ($vm in $LocalBoxConfig.NodeHostConfig) {
-        $vmName = $vm.Hostname
-        Write-Host "Renaming second NIC inside $vmName (if needed)..."
-        Invoke-Command -ComputerName $vmName -Credential $localCred -ScriptBlock {
-            $target1 = "FABRIC"
-            $target2 = "FABRIC2"
-            $adapters = Get-NetAdapter | Where-Object { $_.Status -eq 'Up' } | Sort-Object InterfaceDescription
-            # Simple heuristic: keep existing FABRIC; rename the first non-FABRIC remaining to FABRIC2
-            if (-not (Get-NetAdapter -Name $target2 -ErrorAction SilentlyContinue)) {
-                $cand = $adapters | Where-Object { $_.Name -ne $target1 } | Select-Object -First 1
-                if ($cand) { Rename-NetAdapter -Name $cand.Name -NewName $target2 -PassThru | Out-Null }
-            }
-        }
-    }
-}
-
 $endtime = Get-Date
 $timeSpan = New-TimeSpan -Start $starttime -End $endtime
 Write-Host

@@ -328,8 +328,8 @@ Write-Host "Registry setting applied successfully. fClientDisableUDP set to $reg
 
 # Install Hyper-V and reboot
 Write-Header "Installing Optional features."
-Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
-Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
+#Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
+#Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
 
 Write-Header "Configuring Windows Defender exclusions for Hyper-V."
 

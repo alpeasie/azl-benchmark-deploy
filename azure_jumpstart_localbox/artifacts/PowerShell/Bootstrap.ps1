@@ -108,8 +108,8 @@ Start-Transcript -Path "$($LocalBoxConfig.Paths["LogsDir"])\Bootstrap.log"
 ## Setup host infrastructure and apps
 #################################################################################
 # Extending C:\ partition to the maximum size
-Write-Host "Extending C:\ partition to the maximum size"
-Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
+#Write-Host "Extending C:\ partition to the maximum size"
+#Resize-Partition -DriveLetter C -Size $(Get-PartitionSupportedSize -DriveLetter C).SizeMax
 
 Write-Host "Downloading Azure Local configuration scripts"
 Invoke-WebRequest "https://raw.githubusercontent.com/Azure/arc_jumpstart_docs/main/img/wallpaper/localbox_wallpaper_dark.png" -OutFile $LocalBoxPath\wallpaper.png
@@ -327,7 +327,7 @@ Set-ItemProperty -Path $registryPath -Name $registryName -Value $registryValue -
 Write-Host "Registry setting applied successfully. fClientDisableUDP set to $registryValue"
 
 # Install Hyper-V and reboot
-Write-Header "Installing Optional features."
+#Write-Header "Installing Optional features."
 #Enable-WindowsOptionalFeature -Online -FeatureName Containers -All -NoRestart
 #Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -NoRestart
 
@@ -358,7 +358,7 @@ Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmwp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmsp.exe"
 Add-MpPreference -ExclusionProcess  "%systemroot%\System32\Vmcompute.exe"
 
-
+<#
 Write-Header "Installing Hyper-V (no automatic reboot)."
 $hv = Get-WindowsFeature -Name Hyper-V
 if ($hv.InstallState -ne 'Installed') {
@@ -372,15 +372,21 @@ $hypervNotInstalled = ((Get-WindowsFeature -Name Hyper-V).InstallState -ne 'Inst
 
 $rebootPending = $needsCbsReboot -or $needsWuReboot -or $hypervNotInstalled
 
+#>
+Write-Header "Installing hyper-v with auto reboot"
+
+Install-WindowsFeature -Name Hyper-V -IncludeAllSubFeature -IncludeManagementTools -Restart
+
 Write-Header "Clean up Bootstrap.log."
 Stop-Transcript
 $logSuppress = Get-Content "$($LocalBoxConfig.Paths.LogsDir)\Bootstrap.log" | Where-Object { $_ -notmatch "Host Application: powershell.exe" }
 $logSuppress | Set-Content "$($LocalBoxConfig.Paths.LogsDir)\Bootstrap.log" -Force
 
-if ($rebootPending) {
+<#
     Write-Host "[Bootstrap] Controlled reboot to finalize Hyper-V."
     Restart-Computer -Force
     return
 } else {
     Write-Host "[Bootstrap] No reboot required after Hyper-V installation."
 }
+#>

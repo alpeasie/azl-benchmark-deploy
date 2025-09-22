@@ -65,7 +65,7 @@ Purpose: Deploy one or more LocalBox scenarios (1,2,3, or all) with different
 param(
   [string]$TemplateFile = 'main.bicep',
   [string]$ParameterFile = 'main.bicepparam',
-  [string]$Location = 'eastus',
+  [string]$Location = 'westus2',
 
   [ValidateSet('1','2','3','all')]
   [string]$Scenario = 'all',          # Which scenario(s) to run

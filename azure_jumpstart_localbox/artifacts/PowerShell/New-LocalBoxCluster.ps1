@@ -38,18 +38,18 @@ $Env:AZCOPY_BUFFER_GB = 4
 Write-Output "Downloading nested VMs VHDX files. This can take some time, hold tight..."
 
 
-<# 2507 image code
+#2507 image code
 azcopy cp 'https://jumpstartprodsg.blob.core.windows.net/jslocal/localbox/prod/AzLocal2507.vhdx' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.vhdx" --recursive=true --check-length=false --log-level=ERROR
 azcopy cp 'https://jumpstartprodsg.blob.core.windows.net/jslocal/localbox/prod/AzLocal2507.sha256' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.sha256" --recursive=true --check-length=false --log-level=ERROR
-#>
+
 
 # 2508 vhd code
 
 # VM SHA256 = https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.sha256?sp=r&st=2025-09-22T18:28:02Z&se=2025-10-24T02:43:00Z&spr=https&sv=2024-11-04&sig=%2BMsJBaREKcY0URgWLdMOSmxQiwwrtjZjsi7H98S4gx0%3D&sr=f
 # VM VHD SAS = https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.vhdx?sp=r&st=2025-09-22T18:25:50Z&se=2025-10-31T02:40:00Z&spr=https&sv=2024-11-04&sig=VQPV%2BhORmFc8Dz%2BUXPcO%2FxUYcKiIXEfHM39G3MjOClU%3D&sr=f
 
-azcopy cp 'https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.vhdx?sp=r&st=2025-09-22T18:25:50Z&se=2025-10-31T02:40:00Z&spr=https&sv=2024-11-04&sig=VQPV%2BhORmFc8Dz%2BUXPcO%2FxUYcKiIXEfHM39G3MjOClU%3D&sr=f' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.vhdx" --recursive=true --check-length=false --log-level=ERROR
-azcopy cp 'https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.sha256?sp=r&st=2025-09-22T18:28:02Z&se=2025-10-24T02:43:00Z&spr=https&sv=2024-11-04&sig=%2BMsJBaREKcY0URgWLdMOSmxQiwwrtjZjsi7H98S4gx0%3D&sr=f' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.sha256" --recursive=true --check-length=false --log-level=ERROR
+#azcopy cp 'https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.vhdx?sp=r&st=2025-09-22T18:25:50Z&se=2025-10-31T02:40:00Z&spr=https&sv=2024-11-04&sig=VQPV%2BhORmFc8Dz%2BUXPcO%2FxUYcKiIXEfHM39G3MjOClU%3D&sr=f' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.vhdx" --recursive=true --check-length=false --log-level=ERROR
+#azcopy cp 'https://configappstorage2008.file.core.windows.net/fs1/AzLocalVM.sha256?sp=r&st=2025-09-22T18:28:02Z&se=2025-10-24T02:43:00Z&spr=https&sv=2024-11-04&sig=%2BMsJBaREKcY0URgWLdMOSmxQiwwrtjZjsi7H98S4gx0%3D&sr=f' "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.sha256" --recursive=true --check-length=false --log-level=ERROR
 
 
 $checksum = Get-FileHash -Path "$($LocalBoxConfig.Paths.VHDDir)\AzL-node.vhdx"
@@ -61,7 +61,7 @@ else {
     Write-Error "AZSCHI.vhdx is corrupt. Aborting deployment. Re-run C:\LocalBox\LocalBoxLogonScript.ps1 to retry"
     throw
 }
-#>
+
 
 
 

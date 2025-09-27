@@ -239,6 +239,31 @@ Set-DataDrives -LocalBoxConfig $LocalBoxConfig -Credential $localCred
 # Configure networking
 Set-NICs -LocalBoxConfig $LocalBoxConfig -Credential $localCred
 
+# Post-NIC customization for azlhost1: disable automatic checkpoints & remove IPv6 on FABRIC
+
+if ($env:clusterDeploymentMode -eq 'none') {
+    try {
+        $targetVm = 'azlhost1'
+        $vm = Get-VM -Name $targetVm -ErrorAction SilentlyContinue
+        if ($vm) {
+            # Disable automatic checkpoints (lab requirement)
+            Set-VM -Name $targetVm -AutomaticCheckpointsEnabled $false -ErrorAction Stop
+            # Remove IPv6 address from FABRIC interface inside the guest (ignore if absent)
+            Invoke-Command -VMName $targetVm -Credential $localCred -ScriptBlock {
+                try {
+                    Remove-NetIPAddress -InterfaceAlias 'FABRIC' -AddressFamily IPv6 -Confirm:$false -ErrorAction Stop
+                } catch {
+                    Write-Host "FABRIC IPv6 removal skipped: $($_.Exception.Message)" -ForegroundColor DarkGray
+                }
+            }
+        } else {
+            Write-Host "VM $targetVm not found; skipping post-NIC customization." -ForegroundColor DarkGray
+        }
+    } catch {
+        Write-Host "Post-NIC customization failed: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+
 # Create NAT Virtual Switch on AzSMGMT
 New-NATSwitch -LocalBoxConfig $LocalBoxConfig
 

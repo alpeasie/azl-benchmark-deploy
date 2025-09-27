@@ -1,16 +1,34 @@
 # Task 1: Connect a server to Azure
 
-## Overview
+## Task context 
+**1. Read the slideshow images out loud:**
+<div class="carousel">
+  <input type="radio" name="slides" id="slide1" checked>
+  <input type="radio" name="slides" id="slide2">
+  <input type="radio" name="slides" id="slide3">
+  <input type="radio" name="slides" id="slide4">
+  
+<div class="carousel-slides">
+  <img src="../images/oobe0.png" alt="1: Purchase servers">
+  <img src="../images/oobe1.png" alt="2: Set up Azure">
+  <img src="../images/oobe2.png" alt="3: OEM ships">
+  <img src="../images/oobe3.png" alt="4: Open config app">
+</div>
+  <div class="carousel-nav">
+    <label for="slide1"></label>
+    <label for="slide2"></label>
+    <label for="slide3"></label>
+    <label for="slide4"></label>
+  </div>
+</div>
 
-**Context:** You just purchased two servers from an OEM that you want to deploy as an Azure Local cluster. You racked the servers, cabled them, installed the OS. You also set up an Azure tenant, subscription, and resource group. Now, you want to configure the servers and connect them to the cloud. To configure the servers, you will use an app called the Azure Local Configurator App. This app will be running on a laptop that has network connectivity to both servers.
-
-**Your goal:** Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
+**2. Your goal:** Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
 
 ## Detailed Instructions
 
 ### Remote Desktop
 
-- Log in to a remote desktop that has the configurator app installed. Open the [remote desktop link](https://portal.azure.com/#@azlbenchmark.onmicrosoft.com/resource/subscriptions/fbacedb7-2b65-412b-8b80-f8288b6d7b12/resourceGroups/azlrg1/providers/Microsoft.Compute/virtualMachines/LocalBox-Client/bastionHost) in a new tab. 
+- **Log in to a remote desktop** that has the configurator app installed. Open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/194ce359-20d0-44b1-ad02-ea7931a8ed4f) in a new tab. 
 - **Username**: arcdemo
 - **Pass**: azlTesting321!
 
@@ -23,7 +41,7 @@
 
 ### Network
 
-**1. Ensure the server's network adapters match this configuration.** (This is also the intended configuration for the 2-node cluster):
+**1. Ensure `AzLHOST1`'s network adapters match this configuration.** (This is also the intended configuration for the 2-node cluster):
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|
@@ -35,7 +53,7 @@
 | AzLHOST2    | StorageB     | Auto-assigned   | 712  |
 
 
-**2. Join the server to your local network:**
+**2. Join the server to the local network:**
 
 - **Available IP addresses:** 192.168.1.11 – 192.168.1.199 (Except for 192.168.1.20, which is reserved.)
 - **Subnet mask:** 255.255.255.0
@@ -49,10 +67,10 @@
 
 - **Network:** Connect to the Azure public cloud using the public internet. Don’t use any additional proxies. Don’t open any inbound ports.
 - **Tenant ID:** dcea112b-ec40-4856-b620-d8f34929a0e3
-- **Subscription ID:** 11bca099-3772-4ca6-9306-d0297f418192
+- **Subscription ID:** c45d4482-4bf4-4e6f-9fd1-aa3e8099e521
 - **Resource group:** azlrg1
 - **Region:** East US
-- **Azure username:** user1@azlbenchmark.onmicrosoft.com
+- **Azure username:** azuser1@azlbenchmark.onmicrosoft.com
 - **Pass:** _Temporary pass that was sent to you_
 
 ## End of task instructions
@@ -61,6 +79,6 @@
 
 ## Next steps 
 
-- Open this [survey](https://forms.office.com/r/4bBC2WZ5qG) in a new tab and complete question 1. Leave the survey tab open. 
-- Brief discussion about the UX.
-- I'll tell you when to start [Task 2](task2.md)
+1. Open this [survey](https://forms.office.com/r/4bBC2WZ5qG) in a new tab and complete question 1. Leave the survey tab open then return back to the instructions. 
+2. I'll tell you when to start [Task 2](task2.md)
+

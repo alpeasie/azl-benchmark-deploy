@@ -1,16 +1,10 @@
 # Task 5: Prepare an Azure Local VM image
 
-## Context
+**Context:** You want to deploy Windows Server 2019 VMs on your cluster named _azlcluster3_.
 
-You want to deploy Windows Server 2019 VMs on your cluster named _azlcluster3_.
+**Your goal:** Use the Azure portal to prepare this image on your cluster.
 
-## Your goal
-
-Use the Azure portal to prepare this image on your cluster.
-
-## Details
-
-- Download the image from the Azure marketplace and store it locally on your cluster in a highly-available volume.
+**Details:**: Download the image from the Azure marketplace and store it locally on your cluster in a highly-available volume.
 
 **Stop when:** Image deployment runs for 30 seconds.
 

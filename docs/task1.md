@@ -29,8 +29,8 @@
 ### Remote Desktop
 
 - **Log in to a remote desktop** that has the configurator app installed. Open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/194ce359-20d0-44b1-ad02-ea7931a8ed4f) in a new tab. 
-- **Username**: arcdemo
-- **Pass**: azlTesting321!
+- **Username**: `arcdemo`
+- **Pass**: `azlTesting321!`
 
 
 ### Once the desktop loads
@@ -53,7 +53,7 @@
 | AzLHOST2    | StorageB     | Auto-assigned   | 712  |
 
 
-**2. Join the server to the local network:**
+**2. Join the server to the local network :**
 
 - **Available IP addresses:** 192.168.1.11 – 192.168.1.199 (Except for 192.168.1.20, which is reserved.)
 - **Subnet mask:** 255.255.255.0
@@ -70,8 +70,7 @@
 - **Subscription ID:** c45d4482-4bf4-4e6f-9fd1-aa3e8099e521
 - **Resource group:** azlrg1
 - **Region:** East US
-- **Azure username:** azuser1@azlbenchmark.onmicrosoft.com
-- **Pass:** _Temporary pass that was sent to you_
+- **Azure creds:** _Temporary username & pass that was sent to you_
 
 ## End of task instructions
 

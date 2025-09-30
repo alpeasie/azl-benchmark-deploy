@@ -1,7 +1,6 @@
 
 # Task 2: Deploy a 2-node Azure Local cluster
-
-## Overview
+## Overview 
 
 **Context:** You connected two server nodes to the Azure cloud. Now, you want to deploy a 2-node Azure Local cluster.
 
@@ -9,16 +8,22 @@
 
 **Stop when:** Azure Local cluster deployment starts.
 
-## Detailed instructions
+**Prerequisite step:** Sign into Azure portal. 
+1. Open a new incognito browser widnwo and navigate to: (https://portal.azure.com/)
+2. Sign in with the Azure creds provided in Teams. 
+
+
+## Cluster details 
 
 Use the following details to help you create the cluster. If the instructions do not specify a configuration (like what to name the cluster), choose a name based on your professional opinion and the context provided in the task.
 
 ### Azure configuration
 
 - **Resource group:** Create the cluster in the same RG of the servers, `azlrg2`
+- **Subscription:** Azl S3
 - **Region:** East US
 
-### Physical network 
+### Physical cluster network details 
 
 Each server has 3 network adapters: 
 
@@ -29,30 +34,33 @@ The diagram below shows how these servers are cabled.
 ![Cluster network diagram](images/servercable.png)
 
 
-### Local network (LAN)
+### Local network details (LAN)
+Deploy the cluster on the following local network. Ensure the cluster and cluster workloads will be accessible. 
+
 - **Subnet:** 192.168.1.0 / 24
 - **Default gateway:** 192.168.1.1
 - **DNS server:** 192.168.1.254
 - **Available IP addresses:** 192.168.1.11 – 192.168.1.200 (except for 192.168.1.20, which is the IP of the machine you’re currently using on the network).
 
+### Network design instructions  
+1. Keep storage traffic isolated from workloads & server/ cluster management. Create two subnets for storage traffic on different VLANs. 
+2. Ensure the cluster and its workloads are accessible on the local (LAN) network. Assign the smallest number of IP addresses required for the cluster on the local network. 
+3. Maximize the MTU on storage links, use the default for workloads & management. 
 
-### Network design guidelins 
-1. Isolate storage traffic from the network you’ll use for workloads and managing the server. Create two subnets for storage traffic on different VLANs.  
-2. Maximize storage adapter MTUs.
-3. Ensure the cluster and its workloads are accessible on the local network. 
-4. Assign the smallest number of IP addresses required for the cluster. 
-5. Ensure the cluster's network adapters match the following configuration:
 
-**Network Adapter Configuration**
+### Intended network adapter configuraiton
+Use the following table to help configure the cluster network and it's adapters. 
 
-| Server name | Adapter Name | IP Address      | VLAN |
-|-------------|--------------|-----------------|------|
-| AzLHOST1    | FABRIC       | 192.168.1.11    | 0    |
-| AzLHOST1    | StorageA     | Auto-assigned   | 711  |
-| AzLHOST1    | StorageB     | Auto-assigned   | 712  |
-| AzLHOST2    | FABRIC       | 192.168.1.12    | 0    |
-| AzLHOST2    | StorageA     | Auto-assigned   | 711  |
-| AzLHOST2    | StorageB     | Auto-assigned   | 712  |
+| Server name | Adapter Name | IP Address      | VLAN | MTU     |
+|-------------|--------------|-----------------|------|---------|
+| AzLHOST1    | FABRIC       | 192.168.1.11    | 0    | Default |
+| AzLHOST1    | StorageA     | Auto-assigned   | 711  | Max     |
+| AzLHOST1    | StorageB     | Auto-assigned   | 712  | Max     |
+| AzLHOST2    | FABRIC       | 192.168.1.12    | 0    | Default |
+| AzLHOST2    | StorageA     | Auto-assigned   | 711  | Max     |
+| AzLHOST2    | StorageB     | Auto-assigned   | 712  | Max     |
+
+
 
 
 

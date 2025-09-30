@@ -38,7 +38,7 @@
 
 ## Next steps 
 
-1. Open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&p=f&viewport=1477%2C713%2C0.1&t=nc4yBratS5PjalR7-0&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=104%3A45&show-proto-sidebar=1). Pass: `azlTesting321!`
+1. (Optional) I'll tell you whether to open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&p=f&viewport=1477%2C713%2C0.1&t=nc4yBratS5PjalR7-0&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=104%3A45&show-proto-sidebar=1). Pass: `azlTesting321!`
 
 2. Reopen the browser tab with the survey and complete question 3. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
 

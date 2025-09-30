@@ -10,7 +10,7 @@
 
 **Prerequisite step:** Sign into Azure portal. 
 
-1. Open a new incognito browser widnwo and navigate to: (https://portal.azure.com/)
+1. Open a new incognito browser window for the [azure portal](https://portal.azure.com/)
 2. Sign in with the Azure creds provided in Teams. 
 
 

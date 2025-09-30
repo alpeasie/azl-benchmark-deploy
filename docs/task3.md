@@ -20,6 +20,7 @@
 1. Connect the VM to Azure using the public internet and no proxies. Don't modify the port configurations. 
 
 2. Place the VM on your local network (LAN) and in the same subnet as your cluster:
+
   - **Local network subnet**: 192.168.1.0 / 24
   - **Reserved IPs in the subnet**:
     - All IP addresses used by the AzLCluster3 system. 
@@ -31,10 +32,11 @@
 
 ## End of task instructions
 
-- **Stop when:** The VM resource is created.
+**Stop when:** The VM resource is created.
 
 ## Next steps 
-1. (Optional): Open the progress animation [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&t=68CvmXlAwhUrDkvy-1) in a new tab. Pass: `azlTesting321!`
+
+1. Open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&p=f&viewport=1477%2C713%2C0.1&t=nc4yBratS5PjalR7-0&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=104%3A45&show-proto-sidebar=1). Pass: `azlTesting321!`
 
 2. Reopen the browser tab with the survey and complete question 3. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
 

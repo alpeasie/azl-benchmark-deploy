@@ -13,10 +13,9 @@
 
 ## End of task instructions
 
-- **Stop when:** You confirm the network is setup. 
+**Stop when:** You confirm the network is setup. 
 
 ## Next steps 
 
-- Complete survey quesiton 4. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
-- Brief discussion.
-- I'll tell you when to start [Task 5](task5.md)
+1. Complete survey quesiton 4. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+2. I'll tell you when to start [Task 5](task5.md)

@@ -9,6 +9,7 @@
 **Stop when:** Azure Local cluster deployment starts.
 
 **Prerequisite step:** Sign into Azure portal. 
+
 1. Open a new incognito browser widnwo and navigate to: (https://portal.azure.com/)
 2. Sign in with the Azure creds provided in Teams. 
 
@@ -79,9 +80,10 @@ Use the following table to help configure the cluster network and it's adapters.
 
 ## End of task instructions
 
-- **Stop when:** Azure Local cluster deployment starts. Let me know when you think you're done. 
+**Stop when:** Azure Local cluster deployment starts. Let me know when you think you're done. 
 
 ## Next steps 
+
 1. Open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=104-35&t=68CvmXlAwhUrDkvy-1) in a new tab. Pass: `azlTesting321!`
 
 2. Reopen the browser tab with the survey and complete question 2: [survey](https://forms.office.com/r/4bBC2WZ5qG)

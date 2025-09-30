@@ -19,7 +19,9 @@
 
 1. Connect the VM to Azure using the public internet and no proxies. Don't modify the port configurations. 
 
-2. Place the VM on your local network (LAN) and in the same subnet as your cluster:
+2. Place the VM on your local network (LAN) and in the same subnet as your cluster.
+
+**Local network details:**
 
   - **Local network subnet**: 192.168.1.0 / 24
   - **Reserved IPs in the subnet**:

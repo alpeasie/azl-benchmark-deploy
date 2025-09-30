@@ -11,7 +11,7 @@
 
 ## Next steps 
 
-1. Complete survey quesiton 4. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
+1. Complete survey quesitons 5 & 6. [survey link](https://forms.office.com/r/4bBC2WZ5qG)
 
 2. Complete final survey. 
 

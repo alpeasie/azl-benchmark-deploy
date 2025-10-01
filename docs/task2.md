@@ -30,7 +30,7 @@ Use the following details to help you create the cluster. If the instructions do
 
 ### Cluster network details
 
-**Important**: Read all of the network configuration information: through the 'network design instructions step' before you complete the cluster network step in the wizard. 
+**Important**: Read all of the network configuration information--through the 'network design instructions'--before you edit the network step in the wizard. 
 
 Each server has 3 network adapters: 
 

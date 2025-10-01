@@ -1,7 +1,7 @@
 # Task 1: Connect a server to Azure
 
 ## Overview
-You want just purchased a new 2-node Azure Local cluster. You want to configure the servers and connect them to Azure. 
+You just purchased a new 2-node Azure Local cluster. You want to configure the servers and connect them to Azure. 
 
 For more context, read the slideshow below:
 <div class="carousel">
@@ -33,10 +33,10 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 
 ### Remote Desktop
 
-- **Log in to a remote desktop** that has the configurator app installed. In a new tab, open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/05b63f9c-2b76-474a-a76e-c8fd807444b8).
+- **Log in to a remote desktop** that has the configurator app installed. In a new tab, open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/a1262f37-9b7d-499f-8640-aef84b41f8c8).
 
 - **Username**: arcdemo
-- **Pass**: azlTesting123!
+- **Pass**: azlTesting321!
 
 
 ### After the remote desktop loads
@@ -50,8 +50,9 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 
 ### Network details
 
-**1. Ensure the server's network adapters match this configuration.**
-Note: Only the FABRIC adapter has connectivity to the internet.
+**1. The server's network adapters should use the following configuration.**
+
+**Note: Only the FABRIC adapter** has connectivity to the internet.
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|
@@ -73,8 +74,8 @@ Note: Only the FABRIC adapter has connectivity to the internet.
 ### Azure details
 
 - **Network:** Connect to the Azure public cloud using the public internet. Don’t use any additional proxies. Don’t open any inbound ports.
-- **Tenant ID:** dcea112b-ec40-4856-b620-d8f34929a0e3
-- **Subscription ID:** c45d4482-4bf4-4e6f-9fd1-aa3e8099e521
+- **Tenant ID:** `dcea112b-ec40-4856-b620-d8f34929a0e3`
+- **Subscription ID:** `c45d4482-4bf4-4e6f-9fd1-aa3e8099e521`
 - **Resource group:** azlrg1
 - **Region:** East US
 - **Azure creds:** _Temporary username & pass that was sent to you via Teams_

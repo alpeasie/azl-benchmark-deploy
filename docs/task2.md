@@ -30,6 +30,8 @@ Use the following details to help you create the cluster. If the instructions do
 
 ### Cluster network details
 
+**Important**: Read all of the network configuration information: through the 'network design instructions step' before you complete the cluster network step in the wizard. 
+
 Each server has 3 network adapters: 
 
 - 1 adapter for workloads and management. These are cabled to a network switch. 

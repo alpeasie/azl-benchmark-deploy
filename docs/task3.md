@@ -28,8 +28,9 @@
   - **VLAN**: 0
   - **DNS server**: 192.168.1.254
   - **IPs currently in use on the subnet**:
-    - All IP addresses used by azlcluster3
-    - All IPs between: 192.168.200 - 192.168.255, and 192.168.1.20.
+    - All IP addresses used by azlcluster3 (which are the same IPs you defined in Task 2).
+    - All IPs between: 192.168.200 - 192.168.255. 
+    - 192.168.1.20
 
 
 

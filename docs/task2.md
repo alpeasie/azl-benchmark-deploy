@@ -32,10 +32,11 @@ Use the following details to help you create the cluster. If the instructions do
 
 **Important**: Read all of the network configuration information--through the 'network design instructions'--before you edit the network step in the wizard. 
 
-Each server has 3 network adapters: 
 
-- 1 adapter for workloads and management. These are cabled to a network switch. 
-- 2 adapters for storage, which are directly connected. 
+**Cluster adapters:** Each server has 3 network adapters: 
+
+- 1 adapter for **workloads and management.** These adapters are cabled to a network switch. 
+- 2 adapters for **storage**, which are directly connected. 
 
 The diagram below shows how these servers are cabled, and how traffic should be routed. 
 

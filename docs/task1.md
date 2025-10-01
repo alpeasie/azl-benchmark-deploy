@@ -26,7 +26,7 @@ For more context, read the slideshow below:
 
 
 ### Your goal  
-Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
+Use the Configurator App to configure one of your servers and connect it to Azure. **Server name:** AzLHOST1 
 
 
 ## Detailed Instructions
@@ -35,17 +35,17 @@ Use the Configurator App to configure the server `AzLHOST1` and connect it to Az
 
 - **Log in to a remote desktop** that has the configurator app installed. In a new tab, open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/05b63f9c-2b76-474a-a76e-c8fd807444b8).
 
-- **Username**: `arcdemo`
-- **Pass**: `azlTesting123!`
+- **Username**: arcdemo
+- **Pass**: azlTesting123!
 
 
 ### After the remote desktop loads
 
 1. Run the configurator app **as an administrator.**
-2. Onboard the server `AzLHOST1` to Azure using the local admin credentials:
+2. Connect to the server `AzLHOST1` using the local admin credentials:
 
-- **Usernme**:  `administrator`
-- **Password**: `azlTesting321!`
+- **Usernme**:  administrator
+- **Password**: azlTesting321!
 
 
 ### Network details

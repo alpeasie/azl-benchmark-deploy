@@ -25,6 +25,9 @@ Use the following details to help you create the cluster. If the instructions do
 - **Region:** East US
 - **Key Vault:** Use a new KV
 
+<br>
+<br>
+
 ### Cluster network details
 
 Each server has 3 network adapters: 
@@ -37,7 +40,7 @@ The diagram below shows how these servers are cabled, and how traffic should be 
 ![Cluster network diagram](images/servercable2.png)
 
 ### Network adapter details
-The table below shows the network adapters for both servers and their intended configuration. 
+The table below shows the network adapters that are enabled on both servers and how they should be configured. 
 
 | Server name | Adapter Name | IP Address      | VLAN | MTU     |
 |-------------|--------------|-----------------|------|---------|
@@ -64,6 +67,11 @@ Ensure the cluster and it's cluster workloads are accessible on the following ne
 4. Assign the smallest number of IP addresses required for the cluster on the local network. 
 5. Maximize the MTU on storage links, use the default MTUs for workloads & management. 
 
+
+
+<br>
+<br>
+<br>
 
 
 ## Active Directory & credential details

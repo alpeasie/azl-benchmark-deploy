@@ -1,7 +1,9 @@
 # Task 1: Connect a server to Azure
 
-## Task context 
-**1. Read the slideshow images out loud:**
+## Overview
+You want just purchased a new 2-node Azure Local cluster. You want to configure the servers and connect them to Azure. 
+
+For more context, read the slideshow below:
 <div class="carousel">
   <input type="radio" name="slides" id="slide1" checked>
   <input type="radio" name="slides" id="slide2">
@@ -23,7 +25,9 @@
 </div>
 
 
-**2. Your goal for this task:** Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
+### Your goal  
+Use the Configurator App to configure the server `AzLHOST1` and connect it to Azure.
+
 
 ## Detailed Instructions
 

@@ -9,7 +9,7 @@
 
 - Your router is already configured with a Layer-3 Virtual Switch interface with gateway address `192.168.10.1`.
 - DNS server: `192.168.1.254`
-- Block all inbound traffic on this subnet.
+- Don't modify any network port configurations.  
 
 
 **Stop when:** You confirm the network is setup. 

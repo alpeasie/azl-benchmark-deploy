@@ -47,6 +47,7 @@
 ### Network details
 
 **1. Ensure the server's network adapters match this configuration.**
+Note: Only the FABRIC adapter has connectivity to the internet.
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|

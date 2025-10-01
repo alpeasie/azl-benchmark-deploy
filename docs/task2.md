@@ -20,37 +20,24 @@ Use the following details to help you create the cluster. If the instructions do
 
 ### Azure configuration
 
-- **Resource group:** Create the cluster in the same RG of the servers, `azlrg2`
+- **Resource group:** Create the cluster in the same RG as the servers, `azlrg2`
 - **Subscription:** Azl S3
 - **Region:** East US
+- **Key Vault:** Use a new KV
 
-### Physical cluster network details 
+### Cluster network details
 
 Each server has 3 network adapters: 
 
 - 1 adapter for workloads and management. These are cabled to a network switch. 
 - 2 adapters for storage, which are directly connected. 
-The diagram below shows how these servers are cabled. 
 
-![Cluster network diagram](images/servercable.png)
+The diagram below shows how these servers are cabled, and how traffic should be routed. 
 
+![Cluster network diagram](images/servercable2.png)
 
-### Local network details (LAN)
-Deploy the cluster on the following local network. Ensure the cluster and cluster workloads will be accessible. 
-
-- **Subnet:** 192.168.1.0 / 24
-- **Default gateway:** 192.168.1.1
-- **DNS server:** 192.168.1.254
-- **Available IP addresses:** 192.168.1.11 – 192.168.1.200 (except for 192.168.1.20, which is the IP of the machine you’re currently using on the network).
-
-### Network design instructions  
-1. Keep storage traffic isolated from workloads & server/ cluster management. Create two subnets for storage traffic on different VLANs. 
-2. Ensure the cluster and its workloads are accessible on the local (LAN) network. Assign the smallest number of IP addresses required for the cluster on the local network. 
-3. Maximize the MTU on storage links, use the default for workloads & management. 
-
-
-### Intended network adapter configuraiton
-Use the following table to help configure the cluster network and it's adapters. 
+### Network adapter details
+The table below shows the network adapters for both servers and their intended configuration. 
 
 | Server name | Adapter Name | IP Address      | VLAN | MTU     |
 |-------------|--------------|-----------------|------|---------|
@@ -61,16 +48,32 @@ Use the following table to help configure the cluster network and it's adapters.
 | AzLHOST2    | StorageA     | Auto-assigned   | 711  | Max     |
 | AzLHOST2    | StorageB     | Auto-assigned   | 712  | Max     |
 
+### Local network details (LAN)
+Ensure the cluster and it's cluster workloads are accessible on the following network: 
+
+- **Subnet:** 192.168.1.0 / 24
+- **Default gateway:** 192.168.1.1
+- **DNS server:** 192.168.1.254
+- **Available IP addresses:** 192.168.1.11 – 192.168.1.200 (except for 192.168.1.20, which is the IP of the machine you’re currently using on the network).
+- **VLAN**: 0
+
+### Network design instructions  
+1. Keep storage traffic isolated from workloads & server/ cluster management.
+2. Create two subnets for storage traffic on VLANs 711 & 712.  
+3. Ensure the cluster and its workloads are accessible on the local (LAN) network, VLAN 0.  
+4. Assign the smallest number of IP addresses required for the cluster on the local network. 
+5. Maximize the MTU on storage links, use the default MTUs for workloads & management. 
 
 
 
-
-## Active Directory & credentials
+## Active Directory & credential details
 
 - Join the cluster to the domain: `jumpstart.local`
 - OU formatting: `OU=hcioudocs,DC=jumpstart,DC=local`
-- Domain creds: `localboxdeployuser/azlTesting321!`
-- Local admin creds: `administrator/azlTesting321!`
+- Domain account username: `localboxdeployuser`
+- Domain password: `azlTesting321!`
+- Local admin username: `administrator`
+- Local admin password: `azlTesting321!`
 
 ## Cluster features
 
@@ -82,7 +85,8 @@ Use the following table to help configure the cluster network and it's adapters.
 
 **Stop when:** Azure Local cluster deployment starts. Let me know when you think you're done. 
 
-## Next steps 
+
+## After you complete task 2
 
 1. Open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=104-35&t=68CvmXlAwhUrDkvy-1) in a new tab. Pass: `azlTesting321!`
 

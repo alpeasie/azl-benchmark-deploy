@@ -30,13 +30,14 @@
     - All IPs between: 192.168.200 - 192.168.255
   - **Default gateway**: 192.168.1.1
   - **No VLAN**
+  - **DNS server**: 192.168.1.254
 
 
 ## End of task instructions
 
 **Stop when:** The VM resource is created.
 
-## Next steps 
+## After task 3
 
 1. (Optional) I'll tell you whether to open this link in a new tab: [prototype](https://www.figma.com/proto/iBO6B6vgjwlEzgv7p10qFi/AzL-Benchmark-Prototypes?node-id=57-1228&p=f&viewport=1477%2C713%2C0.1&t=nc4yBratS5PjalR7-0&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=104%3A45&show-proto-sidebar=1). Pass: `azlTesting321!`
 

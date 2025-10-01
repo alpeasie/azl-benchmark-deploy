@@ -19,8 +19,8 @@
 Use the following details to help you create the cluster. If the instructions do not specify a configuration (like what to name the cluster), choose a name based on your professional opinion and the context provided in the task.
 
 ### Azure configuration
-
-- **Resource group:** Create the cluster in the same RG as the servers, `azlrg2`
+- **Server names:** Create the Azure local system using the servers `AzLHOST1` and `AzLHOST2`
+- **Resource group:**  Use the same RG as the servers, `azlrg2`.
 - **Subscription:** Azl S3
 - **Region:** East US
 - **Key Vault:** Use a new KV

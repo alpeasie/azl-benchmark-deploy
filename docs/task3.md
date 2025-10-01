@@ -24,13 +24,13 @@
 **Local network details:**
 
   - **Local network subnet**: 192.168.1.0 / 24
-  - **Reserved IPs in the subnet**:
-    - All IP addresses used by the AzLCluster3 system. 
-    - A PC on the network: 192.168.1.20
-    - All IPs between: 192.168.200 - 192.168.255
   - **Default gateway**: 192.168.1.1
-  - **No VLAN**
+  - **VLAN**: 0
   - **DNS server**: 192.168.1.254
+  - **IPs currently in use on the subnet**:
+    - All IP addresses used by azlcluster3
+    - All IPs between: 192.168.200 - 192.168.255, and 192.168.1.20.
+
 
 
 ## End of task instructions

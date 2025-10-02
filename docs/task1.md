@@ -42,7 +42,7 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 ### After the remote desktop loads
 
 1. Run the configurator app **as an administrator.**
-2. Connect to the server `AzLHOST1` using the local admin credentials:
+2. Connect to the server **AzLHOST1** using the local admin credentials:
 
 - **Usernme**:  administrator
 - **Password**: azlTesting321!
@@ -52,7 +52,7 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 
 **1. The server's network adapters should use the following configuration.**
 
-**Note: Only the FABRIC adapter** has connectivity to the internet.
+**Note: Only the FABRIC adapter** has connectivity to the internet. The storage adapters already have APIPA addresses assigned. 
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|
@@ -61,7 +61,7 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 | AzLHOST1    | StorageB     | Auto-assigned   | 712  |
 
 
-**2. Join the server to the local network :**
+**2. Ensure the server will be accessible on the local network :**
 
 - **Available IP addresses:** 192.168.1.11 – 192.168.1.199 (Except for 192.168.1.20, which is reserved.)
 - **Subnet mask:** 255.255.255.0

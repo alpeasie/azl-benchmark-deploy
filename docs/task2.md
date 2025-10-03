@@ -79,8 +79,7 @@ Ensure the cluster and it's cluster workloads are accessible on the following ne
 
 ## Cluster management features 
 
-- Use an existing Storage Account 
-
+- Use an existing Storage Account named: `localboxbwb43wuoawc5a`
 
 
 ## Active Directory & credential details

@@ -52,7 +52,7 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 
 **1. The server's network adapters should use the following configuration.**
 
-**Note: Only the FABRIC adapter** has connectivity to the internet. The storage adapters already have APIPA addresses assigned. 
+**Note: Only the FABRIC adapter** has connectivity to the internet. This is also the configuration that you'll use for creating the 2-node cluster later on. 
 
 | Server name | Adapter Name | IP Address      | VLAN |
 |-------------|--------------|-----------------|------|

@@ -4,7 +4,7 @@
 
 **Your goal:** Use the Azure portal to prepare this image on your cluster.
 
-**Details:**: Download the image from the Azure marketplace and store it locally on your cluster in a highly-available volume.
+**Details:**: Download the image from the Azure marketplace and store it locally on your cluster in a highly-available storage volume.
 
 **Stop when:** Image deployment runs for 30 seconds.
 

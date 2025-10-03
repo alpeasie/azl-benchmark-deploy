@@ -77,6 +77,12 @@ Ensure the cluster and it's cluster workloads are accessible on the following ne
 <br>
 
 
+## Cluster management features 
+
+- Use an existing Storage Account 
+
+
+
 ## Active Directory & credential details
 
 - Join the cluster to the domain: `jumpstart.local`
@@ -86,7 +92,7 @@ Ensure the cluster and it's cluster workloads are accessible on the following ne
 - Local admin username: `administrator`
 - Local admin password: `azlTesting321!`
 
-## Cluster features
+## Additional cluster features
 
 - Ensure the cluster follows security best practices for a test cluster but disable bitlocker
 - Create multiple cluster shared volumes for workloads

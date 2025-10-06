@@ -1,9 +1,9 @@
 
 # Task 4: Configure cluster network for workloads
 
-**Context:** You want to deploy a new high-security VM on an Azure Local cluster. You want this VM to run a network that is isolated from the host cluster network. 
+**Context:** You want to deploy a new VM on an Azure Local cluster for a credit-processing application. You want this VM to run a network that is isolated from the host cluster network. 
 
-**Your goal**: Configure the cluster, `azlcluster3`, so that you can deploy workloads in the following networking range: `192.168.10.2 – 192.168.10.255` on `VLAN 10`.
+**Your goal**: Configure the cluster, `azlcluster3`, so that you can deploy VM workloads in the following networking range: `192.168.10.2 – 192.168.10.255` on `VLAN 10`.
 
 **Details:**
 

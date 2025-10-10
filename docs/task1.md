@@ -33,7 +33,7 @@ Use the Configurator App to configure one of your servers and connect it to Azur
 
 ### Remote Desktop
 
-- **Log in to a remote desktop** that has the configurator app installed. In a new tab, open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/4b26bfa2-3768-448b-a36f-45b42cbc9250).
+- **Log in to a remote desktop** that has the configurator app installed. In a new tab, open the [remote desktop link](https://bst-a6e50e98-d3c2-4e4e-ab6f-6280cb4ea85b.bastion.azure.com/api/shareable-url/f4dd6cc2-c8c2-4f85-8c49-dcbc155981b6).
 
 - **Username**: arcdemo
 - **Pass**: azlTesting321!
